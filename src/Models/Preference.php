@@ -2,7 +2,6 @@
 
 namespace Matteoc99\LaravelPreference\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Matteoc99\LaravelPreference\Casts\Enum;
 use Matteoc99\LaravelPreference\Casts\Rule;
@@ -20,10 +19,11 @@ use Matteoc99\LaravelPreference\Contracts\HasValidation;
  * @property string|null        $description
  * @property CastableEnum       $cast
  * @property HasValidation|null $rule
+ * @property mixed              $default_value
  * @property Carbon             $created_at
  * @property Carbon             $updated_at
  */
-class Preference extends Model
+class Preference extends BaseModel
 {
 
     protected $table = "preferences";

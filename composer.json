@@ -1,0 +1,39 @@
+{
+  "name": "matteoc99/laravel-preference",
+  "description": "Laravel package that aims to store and manage user settings/preferences in a simple and scalable manner",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "matteo",
+      "email": "matteo.cosi@live.it"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Matteoc99\\LaravelPreference\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Matteoc99\\LaravelPreference\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": "^8.1",
+    "laravel/framework": "^9"
+  },
+  "require-dev": {
+    "orchestra/testbench": "^7.0",
+    "phpunit/phpunit": "^9.0 || ^10.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Matteoc99\\LaravelPreference\\PreferenceServiceProvider"
+      ]
+    }
+  }
+}

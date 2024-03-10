@@ -9,8 +9,6 @@ use Matteoc99\LaravelPreference\Rules\DataRule;
 
 class Rule implements CastsAttributes
 {
-
-
     public function get($model, string $key, mixed $value, array $attributes): HasValidation
     {
         return $this->deserialize($attributes);

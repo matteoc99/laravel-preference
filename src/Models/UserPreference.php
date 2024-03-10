@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
-use Matteoc99\LaravelPreference\Traits\HasPreferences;
 
 /**
  * @property int        $id
@@ -19,7 +18,6 @@ use Matteoc99\LaravelPreference\Traits\HasPreferences;
  */
 class UserPreference extends Model
 {
-    use HasPreferences;
 
     protected $table = 'users_preferences';
 

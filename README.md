@@ -8,6 +8,5 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 
 | Package Version | Laravel Version |
 |-----------------|-----------------|
-| 1.x             | 9               |
-| 2.x             | 10              |
-| 3.x             | 11              |
+| 1.x             | 10              |
+| 2.x             | 11              |

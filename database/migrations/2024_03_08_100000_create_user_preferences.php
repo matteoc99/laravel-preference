@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->unique(['group', 'name']);
         });
 
-        Schema::create($userPreferenceTable, function (Blueprint $table) {
+        Schema::create($userPreferenceTable, function (Blueprint $table) use ($preferenceTable) {
             $table->bigIncrements('id');
             $table->morphs('preferenceable');
             $table->unsignedInteger('preference_id');
@@ -36,7 +36,7 @@ return new class extends Migration {
 
             $table->foreign('preference_id')
                 ->references('id')
-                ->on('preferences')
+                ->on($preferenceTable)
                 ->onDelete('cascade');
         });
     }

@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  *
  * @property Preference $preference
  */
-class UserPreference extends Model
+class UserPreference extends BaseModel
 {
 
     protected $table = 'users_preferences';

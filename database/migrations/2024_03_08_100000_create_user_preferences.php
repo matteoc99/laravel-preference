@@ -14,31 +14,35 @@ return new class extends Migration {
         $preferenceTable     = (new Preference())->getTable();
         $userPreferenceTable = (new UserPreference())->getTable();
 
-        Schema::create($preferenceTable, function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('group')->default('general'); // find and organize preferences // group -> Collection<Preferences>
-            $table->string('name');  // group.name ->  Preference or
-            $table->string('description')->nullable();
-            $table->json('cast');
-            $table->json('rule')->nullable(); // Rule Class for validation | default, validate the cast
-            $table->json('default_value')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable($preferenceTable)) {
+            Schema::create($preferenceTable, function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->string('group')->default('general'); // find and organize preferences // group -> Collection<Preferences>
+                $table->string('name');  // group.name ->  Preference or
+                $table->string('description')->nullable();
+                $table->json('cast');
+                $table->json('rule')->nullable(); // Rule Class for validation | default, validate the cast
+                $table->json('default_value')->nullable();
+                $table->timestamps();
 
-            $table->unique(['group', 'name']);
-        });
+                $table->unique(['group', 'name']);
+            });
+        }
 
-        Schema::create($userPreferenceTable, function (Blueprint $table) use ($preferenceTable) {
-            $table->bigIncrements('id');
-            $table->morphs('preferenceable');
-            $table->unsignedInteger('preference_id');
-            $table->json('value')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable($userPreferenceTable)) {
+            Schema::create($userPreferenceTable, function (Blueprint $table) use ($preferenceTable) {
+                $table->bigIncrements('id');
+                $table->morphs('preferenceable');
+                $table->unsignedBigInteger('preference_id');
+                $table->json('value')->nullable();
+                $table->timestamps();
 
-            $table->foreign('preference_id')
-                ->references('id')
-                ->on($preferenceTable)
-                ->onDelete('cascade');
-        });
+                $table->foreign('preference_id')
+                    ->references('id')
+                    ->on($preferenceTable)
+                    ->onDelete('cascade');
+            });
+        }
     }
 
     public function down()
@@ -46,7 +50,11 @@ return new class extends Migration {
         $preferenceTable     = (new Preference())->getTable();
         $userPreferenceTable = (new UserPreference())->getTable();
 
-        Schema::dropIfExists($userPreferenceTable);
-        Schema::dropIfExists($preferenceTable);
+        if (Schema::hasTable($userPreferenceTable)) {
+            Schema::dropIfExists($userPreferenceTable);
+        }
+        if (Schema::hasTable($preferenceTable)) {
+            Schema::dropIfExists($preferenceTable);
+        }
     }
 };

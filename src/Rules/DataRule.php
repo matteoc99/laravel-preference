@@ -7,12 +7,16 @@ use Matteoc99\LaravelPreference\Contracts\HasValidation;
 abstract class DataRule implements HasValidation
 {
 
-    protected array $data;
+    private array $data;
 
+    public function __construct($data = [])
+    {
+        $this->setData($data);
+    }
 
     public function getData(): array
     {
-        return $this->getData();
+        return $this->data;
     }
 
     public function setData(array $data): void

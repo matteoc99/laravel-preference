@@ -22,7 +22,7 @@ return new class extends Migration {
                 $table->string('description')->nullable();
                 $table->json('cast');
                 $table->json('rule')->nullable(); // Rule Class for validation | default, validate the cast
-                $table->json('default_value')->nullable();
+                $table->text('default_value')->nullable();
                 $table->timestamps();
 
                 $table->unique(['group', 'name']);
@@ -32,9 +32,9 @@ return new class extends Migration {
         if (!Schema::hasTable($userPreferenceTable)) {
             Schema::create($userPreferenceTable, function (Blueprint $table) use ($preferenceTable) {
                 $table->bigIncrements('id');
-                $table->morphs('preferenceable');
+                $table->morphs('preferenceable','preference_preferenceable_index');
                 $table->unsignedBigInteger('preference_id');
-                $table->json('value')->nullable();
+                $table->text('value')->nullable();
                 $table->timestamps();
 
                 $table->foreign('preference_id')

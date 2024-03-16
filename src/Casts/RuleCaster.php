@@ -3,22 +3,24 @@
 namespace Matteoc99\LaravelPreference\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
 use Matteoc99\LaravelPreference\Contracts\HasValidation;
 use Matteoc99\LaravelPreference\Rules\DataRule;
 
-class Rule implements CastsAttributes
+class RuleCaster implements CastsAttributes
 {
-    public function get($model, string $key, mixed $value, array $attributes): HasValidation
+    public function get(Model $model, string $key, mixed $value, array $attributes)
     {
-        return $this->deserialize($attributes);
+        return $this->deserializerRule($value);
     }
 
-    protected function deserialize($value)
+    protected function deserializerRule($value)
     {
         if (empty($value)) {
             return null;
         }
+        $value = json_decode($value, true);
 
         $class = $value['class'];
 
@@ -36,12 +38,12 @@ class Rule implements CastsAttributes
         return $rule;
     }
 
-    public function set($model, string $key, mixed $value, array $attributes): array
+    public function set(Model $model, string $key, mixed $value, array $attributes)
     {
-        return $this->serialize($value);
+        return json_encode($this->serializeRule($value));
     }
 
-    protected function serialize($rule): array
+    protected function serializeRule($rule): array
     {
         if (!$rule instanceof HasValidation) {
             throw new \InvalidArgumentException("Invalid value for HasValidation attribute.");

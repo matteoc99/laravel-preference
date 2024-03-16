@@ -3,8 +3,9 @@
 namespace Matteoc99\LaravelPreference\Models;
 
 use Illuminate\Support\Carbon;
-use Matteoc99\LaravelPreference\Casts\Enum;
-use Matteoc99\LaravelPreference\Casts\Rule;
+use Matteoc99\LaravelPreference\Casts\EnumCaster;
+use Matteoc99\LaravelPreference\Casts\RuleCaster;
+use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\HasValidation;
 
@@ -34,13 +35,15 @@ class Preference extends BaseModel
         'description',
         'cast',
         'rule',
+        'default_value',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'cast'       => Enum::class,
-        'rule'       => Rule::class,
+        'created_at'    => 'datetime',
+        'updated_at'    => 'datetime',
+        'cast'          => EnumCaster::class,
+        'rule'          => RuleCaster::class,
+        'default_value' => ValueCaster::class,
     ];
 
 }

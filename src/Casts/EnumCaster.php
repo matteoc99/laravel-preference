@@ -4,15 +4,16 @@ namespace Matteoc99\LaravelPreference\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
-class Enum implements CastsAttributes
+class EnumCaster implements CastsAttributes
 {
 
 
     public function get($model, string $key, mixed $value, array $attributes): CastableEnum
     {
-        return $this->deserializeEnum($attributes);
+        return $this->deserializeEnum($value);
     }
 
     protected function deserializeEnum($value)
@@ -20,6 +21,7 @@ class Enum implements CastsAttributes
         if (empty($value)) {
             return null;
         }
+        $value = json_decode($value, true);
 
         $enumClass = $value['class'];
 
@@ -27,15 +29,12 @@ class Enum implements CastsAttributes
             throw new \InvalidArgumentException("Enum class $enumClass does not exist.");
         }
 
-        /**@var CastableEnum $enum * */
-        $enum = App::make($enumClass);
-
-        return $enum->tryFrom($value['value']);
+        return $enumClass::tryFrom($value['value']);
     }
 
-    public function set($model, string $key, mixed $value, array $attributes): array
+    public function set($model, string $key, mixed $value, array $attributes)
     {
-        return $this->serializeEnum($value);
+        return json_encode($this->serializeEnum($value));
     }
 
     protected function serializeEnum($enum): array

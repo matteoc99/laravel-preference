@@ -2,8 +2,12 @@
 
 namespace Matteoc99\LaravelPreference\Models;
 
+use Carbon\Language;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Enum;
+use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 
 class BaseModel extends Model
 {
@@ -18,14 +22,9 @@ class BaseModel extends Model
         parent::__construct($attributes);
     }
 
-    public function getTable()
+    public function toArrayOnly(array $keys)
     {
-        $prefix = config('user_preference.db.table_prefix') ?? "";
-        if (!empty($prefix) && !Str::endsWith($prefix, '_')) {
-            $prefix .= '_';
-        }
-
-        return $prefix . parent::getTable();
+        return Arr::only($this->attributesToArray(), $keys);
     }
 
 }

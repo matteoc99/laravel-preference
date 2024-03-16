@@ -19,6 +19,6 @@ class PreferenceServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__ . '/../config/user_preference.php' => config_path('user_preference.php'),
-        ]);
+        ],'laravel-preference-config');
     }
 }

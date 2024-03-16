@@ -186,3 +186,10 @@ Please review [our security policy](SECURITY.md) on how to report security vulne
 ## License
 
 The MIT License (MIT). Please check the [License File](LICENSE) for more information.
+
+# Support target
+
+| Package Version | Laravel Version |
+|-----------------|-----------------|
+| 1.x             | 10              |
+| 2.x             | 11              |

@@ -5,12 +5,8 @@ namespace Matteoc99\LaravelPreference\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\ValidationException;
-use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\InRule;
-use Matteoc99\LaravelPreference\Tests\Models\CustomCast;
-use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
-use Matteoc99\LaravelPreference\Tests\Models\User;
 
 class PreferenceTest extends TestCase
 {

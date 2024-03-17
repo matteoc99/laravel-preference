@@ -46,4 +46,9 @@ class Preference extends BaseModel
         'default_value' => ValueCaster::class,
     ];
 
+    public function getValidationRules(): array
+    {
+        return array_merge(explode(',', $this->cast->validation()), [$this?->rule]);
+    }
+
 }

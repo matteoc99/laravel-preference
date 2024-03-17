@@ -53,7 +53,7 @@ php artisan migrate
         PreferenceBuilder::init("language")
             ->withDefaultValue("en")
             // optional ->withGroup('general')
-            ->withRule(new InRule(["en","it","de"]))
+            ->withRule(new InRule("en", "it", "de"))
             ->create();
             
             // Or
@@ -177,7 +177,7 @@ class MyRule extends DataRule
 }
 
  PreferenceBuilder::init("timezone",MyCast::TIMEZONE)
-            ->withRule(new MyRule(["Europe","Asia"]))
+            ->withRule(new MyRule("Europe","Asia"))
 ```
 
 ## Security Vulnerabilities

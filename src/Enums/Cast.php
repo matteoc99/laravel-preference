@@ -4,7 +4,7 @@ namespace Matteoc99\LaravelPreference\Enums;
 
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 
@@ -65,38 +65,38 @@ enum Cast: string implements CastableEnum
         switch ($this) {
             case self::INT:
                 if ($type !== 'integer') {
-                    throw new InvalidArgumentException("Expected an integer for cast INT, got $type");
+                    throw ValidationException::withMessages(["Expected an integer for cast INT, got $type"]);
                 }
                 break;
             case self::FLOAT:
                 if (!in_array($type, ['double', 'float'])) {
-                    throw new InvalidArgumentException("Expected a float or double for cast FLOAT, got $type");
+                    throw ValidationException::withMessages(["Expected a float or double for cast FLOAT, got $type"]);
                 }
                 break;
             case self::STRING:
                 if ($type !== 'string') {
-                    throw  new InvalidArgumentException("Expected a string for cast STRING, got $type");
+                    throw  ValidationException::withMessages(["Expected a string for cast STRING, got $type"]);
                 }
                 break;
             case self::BOOL:
                 if ($type !== 'boolean') {
-                    throw new InvalidArgumentException("Expected a boolean for cast BOOL, got $type");
+                    throw ValidationException::withMessages(["Expected a boolean for cast BOOL, got $type"]);
                 }
                 break;
             case self::ARRAY:
                 if ($type !== 'array') {
-                    throw new InvalidArgumentException("Expected an array for cast ARRAY, got $type");
+                    throw ValidationException::withMessages(["Expected an array for cast ARRAY, got $type"]);
                 }
                 break;
             case self::DATETIME:
             case self::TIMESTAMP:
             case self::DATE:
                 if (!($value instanceof Carbon)) {
-                    throw new InvalidArgumentException("Expected a Carbon instance to cast, got $type");
+                    throw ValidationException::withMessages(["Expected a Carbon instance to cast, got $type"]);
                 }
                 break;
             default:
-                throw new InvalidArgumentException("Unknown casting type");
+                throw ValidationException::withMessages(["Unknown casting type"]);
         }
     }
 }

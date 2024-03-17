@@ -55,6 +55,10 @@ php artisan migrate
             // optional ->withGroup('general')
             ->withRule(new InRule(["en","it","de"]))
             ->create();
+            
+            // Or
+            PreferenceBuilder::init("language")->create()
+
     }
 
     /**
@@ -64,7 +68,7 @@ php artisan migrate
     {
         PreferenceBuilder::init("language")
         // optional if there  is only one language preference
-        ->withGroup('preference')
+        ->withGroup('general')
         ->delete();
     }
 ```
@@ -95,7 +99,8 @@ public function getPreference(string $name, string $group = 'general', mixed $de
 
     $user->setPreference('language',"fr"); 
     // ValidationException because of the rule: ->withRule(new InRule(["en","it","de"]))
-
+    $user->setPreference('language',2); 
+    // ValidationException because of the cast: Cast::STRING
 
     $user->removePreference('language'); 
     $user->getPreference('language'); // 'en' as string
@@ -104,7 +109,7 @@ public function getPreference(string $name, string $group = 'general', mixed $de
 ## Casting
 
 > set the cast when creating a Preference
->> PreferenceBuilder::init("language", Cast::String)
+>> PreferenceBuilder::init("language", Cast::STRING)
 
 ### Available Casts
 
@@ -153,8 +158,8 @@ enum MyCast: string implements CastableEnum
 
 > rules need to implement `HasValidation`
 
-> additionally, if your rule requires parameter, extend 'DataRule'
->  which than will provide the parameters via getData()
+> additionally, if your rule requires parameter, extend `DataRule`
+>  which than will provide the parameters via `getData()`
 
 
 ```php

@@ -25,7 +25,7 @@ trait HasPreferences
             ->first();
 
         if ($userPreference && isset($userPreference->preference)) {
-            return $userPreference->preference->value;
+            return $userPreference->value;
         }
 
         return $default ?? $this->getDefaultPreferenceValue($name, $group);
@@ -51,7 +51,7 @@ trait HasPreferences
         $validator = Validator::make(['value' => $value], ['value' => $rules]);
 
         if ($validator->fails()) {
-            throw new ValidationException($validator,);
+            throw new ValidationException($validator);
         }
 
         $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();

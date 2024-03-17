@@ -6,7 +6,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/matteoc99/laravel-preference.svg?style=flat-square)](https://packagist.org/packages/matteoc99/laravel-preference)
 [![Total Downloads](https://img.shields.io/packagist/dt/matteoc99/laravel-preference.svg?style=flat-square)](https://packagist.org/packages/matteoc99/laravel-preference)
-[![Tests](https://github.com/matteoc99/laravel-preference/actions/workflows/laravel.yml/badge.svg)](https://github.com/matteoc99/laravel-preference/actions/workflows/laravel.yml)
+[![Tests](https://github.com/matteoc99/laravel-preference/actions/workflows/tests.yml/badge.svg)](https://github.com/matteoc99/laravel-preference/actions/workflows/tests.yml)
 
 This Laravel package aims to store and manage user settings/preferences in a simple and scalable manner.
 

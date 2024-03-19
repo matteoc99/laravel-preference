@@ -47,7 +47,7 @@ php artisan migrate
 > > with `Carbon/Carbon`
 
 ### Create a Preference
-
+#### single mode
 ```php
  public function up(): void
     {
@@ -71,6 +71,30 @@ php artisan migrate
         // optional if there  is only one language preference
         ->withGroup('general')
         ->delete();
+    }
+```
+#### Bulk mode
+
+```php
+
+$preferences = [
+    ['name' => 'language', 'cast' => Cast::STRING, 'default_value' => 'en', 'rule'=> new InRule("en", "it", "de"), 'group' => 'general'],
+    ['name' => 'theme', 'cast' => Cast::STRING, 'default_value' => 'light'], 
+    ['name' => 'preferred_browser'], 
+    ['name' => 'other_short_pref'], 
+];
+
+ public function up(): void
+    {
+        PreferenceBuilder::initBulk($this->preferences);
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        PreferenceBuilder::deleteBulk($this->$preferences); 
     }
 ```
 
@@ -180,6 +204,10 @@ class MyRule extends DataRule
  PreferenceBuilder::init("timezone",MyCast::TIMEZONE)
             ->withRule(new MyRule("Europe","Asia"))
 ```
+
+## Test
+
+`composer test ./tests`
 
 ## Security Vulnerabilities
 

@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Factory;
 
+use Illuminate\Database\Eloquent\Builder;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\HasValidation;
 use Matteoc99\LaravelPreference\Enums\Cast;
@@ -18,7 +19,7 @@ class PreferenceBuilder
 
     public static function init(string $name, CastableEnum $cast = Cast::STRING): static
     {
-        $builder = new static();
+        $builder = new PreferenceBuilder();
         return $builder->withName($name)->withCast($cast)->withGroup('general');
     }
 
@@ -80,4 +81,65 @@ class PreferenceBuilder
 
         return $query->delete();
     }
+
+    public static function initBulk(array $preferences)
+    {
+        if (empty($preferences)) {
+            throw new \InvalidArgumentException("no preferences provided");
+        }
+
+        foreach ($preferences as $key => &$preferenceData) {
+            if (empty($preferenceData['name'])) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s name is required", $key)
+                );
+            }
+
+            if (!($preferenceData['cast'] instanceof CastableEnum)) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $key)
+                );
+            }
+
+            // Ensure Defaults
+            $preferenceData = array_merge([
+                'group'         => 'general',
+                'default_value' => null,
+                'description'   => '',
+                'rule'          => null,
+            ], $preferenceData);
+
+            if ($preferenceData['default_value'] && $preferenceData['rule'] && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s default_value fails the validation rule", $key)
+                );
+            }
+
+        }
+
+        Preference::upsert($preferences, ['name', 'group']);
+    }
+
+    public static function deleteBulk(array $preferences): int
+    {
+        if (empty($preferences)) {
+            throw new \InvalidArgumentException("no preferences provided");
+        }
+        $query = Preference::query();
+
+        foreach ($preferences as $key => $preferenceData) {
+            if (empty($preferenceData['name'])) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s name is required", $key)
+                );
+            }
+            $query->orWhere(function (Builder $query) use ($preferenceData) {
+                $query->where('name', $preferenceData['name']);
+                $query->where('group', $preferenceData['group'] ?? 'general');
+            });
+        }
+
+        return $query->delete();
+    }
+
 }

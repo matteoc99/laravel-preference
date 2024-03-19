@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\InRule;
 
-class PreferenceTest extends TestCase
+class PreferenceBasicTest extends TestCase
 {
     use WithFaker, RefreshDatabase;
 

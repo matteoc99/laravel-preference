@@ -7,14 +7,14 @@ use Matteoc99\LaravelPreference\Contracts\HasValidation;
 abstract class DataRule implements HasValidation
 {
 
-    private mixed $data;
+    private array $data;
 
     public function __construct(...$data)
     {
         $this->setData($data);
     }
 
-    public function getData(): mixed
+    public function getData(): array
     {
         return $this->data;
     }

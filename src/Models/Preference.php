@@ -48,7 +48,7 @@ class Preference extends BaseModel
 
     public function getValidationRules(): array
     {
-        return array_merge(explode(',', $this->cast->validation()), [$this?->rule]);
+        return array_merge(explode('|', $this->cast->validation()), [$this?->rule]);
     }
 
 }

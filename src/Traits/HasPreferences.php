@@ -11,9 +11,7 @@ use Matteoc99\LaravelPreference\Models\UserPreference;
 
 trait HasPreferences
 {
-    /**
-     * Define eloquent relationships for clarity.
-     */
+
     private function userPreferences(): MorphMany
     {
         return $this->morphMany(UserPreference::class, 'preferenceable');
@@ -88,10 +86,12 @@ trait HasPreferences
      *
      * @param string $name
      * @param string $group
+     *
+     * @return int
      */
-    public function removePreference(string $name, string $group = 'general'): void
+    public function removePreference(string $name, string $group = 'general'): int
     {
-        $this->userPreferences()->whereHas('preference', function ($query) use ($group, $name) {
+       return $this->userPreferences()->whereHas('preference', function ($query) use ($group, $name) {
             $query->where('group', $group)->where('name', $name);
         })->delete();
     }

@@ -16,6 +16,7 @@ enum Cast: string implements CastableEnum
     case BOOL = 'bool';
     case ARRAY = 'array';
     case DATE = 'date';
+    case TIME = 'time';
     case DATETIME = 'datetime';
     case TIMESTAMP = 'timestamp';
 
@@ -28,6 +29,7 @@ enum Cast: string implements CastableEnum
             self::BOOL => 'boolean',
             self::ARRAY => 'array',
             self::DATE, self::DATETIME => 'date',
+            self::TIME => 'date_format:H:i',
             self::TIMESTAMP => 'date_format:U',
         };
     }
@@ -41,6 +43,7 @@ enum Cast: string implements CastableEnum
             self::BOOL => !empty($value),
             self::ARRAY => json_encode($value, 1),
             self::DATE, self::DATETIME => new Carbon($value),
+            self::TIME => Carbon::now()->setTimeFromTimeString($value),
             self::TIMESTAMP => Carbon::createFromTimestamp($value),
         };
     }
@@ -55,6 +58,7 @@ enum Cast: string implements CastableEnum
             self::DATE => $value->toDateString(),
             self::DATETIME => $value->toDateTimeString(),
             self::TIMESTAMP => $value->timestamp,
+            self::TIME => $value->toTimeString(),
         };
     }
 

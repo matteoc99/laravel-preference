@@ -77,17 +77,18 @@ php artisan migrate
 #### Bulk mode
 
 ```php
+use Illuminate\Database\Migrations\Migration;
+use Matteoc99\LaravelPreference\Enums\Cast;
+use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
+use Matteoc99\LaravelPreference\Rules\InRule;
 
-$preferences = [
-    ['name' => 'language', 'cast' => Cast::STRING, 'default_value' => 'en', 'rule'=> new InRule("en", "it", "de"), 'group' => 'general'],
-    ['name' => 'theme', 'cast' => Cast::STRING, 'default_value' => 'light'], 
-    ['name' => 'preferred_browser'], 
-    ['name' => 'other_short_pref'], 
-];
+return new class extends Migration {
 
- public function up(): void
+
+    public function up(): void
     {
-        PreferenceBuilder::initBulk($this->preferences);
+
+        PreferenceBuilder::initBulk($this->preferences());
     }
 
     /**
@@ -95,8 +96,22 @@ $preferences = [
      */
     public function down(): void
     {
-        PreferenceBuilder::deleteBulk($this->$preferences); 
+        PreferenceBuilder::deleteBulk($this->preferences());
     }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function preferences(): array
+    {
+       return [
+           ['name' => 'language', 'cast' => Cast::STRING, 'default_value' => 'en', 'rule' => new InRule("en", "it", "de"), 'group' => 'general'],
+           ['name' => 'theme', 'cast' => Cast::STRING, 'default_value' => 'light'],
+            ['name' => 'configuration', 'cast' => Cast::ARRAY],
+       ];
+    }
+};
+
 ```
 
 ### Working with preferences

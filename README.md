@@ -138,7 +138,7 @@ public function getPreference(string $name, string $group = 'general', mixed $de
 
 ### Available Casts
 
-INT, FLOAT, STRING, BOOL, ARRAY, DATE, DATETIME, TIMESTAMP
+INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP
 
 ### Custom Caster
 

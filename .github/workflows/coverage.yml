@@ -1,0 +1,31 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv
+          coverage: none
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:^10.0" "orchestra/testbench:8.*"
+          composer update
+      - name: Execute tests
+        run: php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml'
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: matteoc99/laravel-preference
+          files: ./reports/coverage/coverage.xml

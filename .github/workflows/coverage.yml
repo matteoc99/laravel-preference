@@ -2,7 +2,7 @@ name: Coverage
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   test:
@@ -15,8 +15,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
-          extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv
-          coverage: none
+          extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv, xdebug
+          coverage: xdebug
       - name: Install dependencies
         run: |
           composer require "laravel/framework:^10.0" "orchestra/testbench:8.*"

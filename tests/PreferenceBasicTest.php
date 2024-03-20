@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\InRule;
+use Matteoc99\LaravelPreference\Tests\Models\User;
 
 class PreferenceBasicTest extends TestCase
 {
@@ -20,7 +21,6 @@ class PreferenceBasicTest extends TestCase
             ->withDefaultValue("en")
             ->withRule(new InRule("en", "it", "de"))
             ->create();
-
     }
 
     public function tearDown(): void

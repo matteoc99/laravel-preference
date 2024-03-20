@@ -14,7 +14,6 @@ class PreferenceGroupsTest extends TestCase
     {
         parent::setUp();
 
-
         for ($i = 0; $i < 5; $i++) {
             PreferenceBuilder::init("language")
                 ->withDefaultValue("en")
@@ -41,11 +40,26 @@ class PreferenceGroupsTest extends TestCase
         $this->assertEquals(2, $this->testUser->getPreferences()->count());
 
     }
+
+    /** @test */
+    public function update_or_create()
+    {
+        for ($i = 0; $i < 5; $i++) {
+            PreferenceBuilder::init("language")
+                ->withDefaultValue("en")
+                ->withGroup("g$i")
+                ->updateOrCreate();
+        }
+
+        $this->assertDatabaseCount('preferences', 5);
+
+    }
+
     public function all_preferences_in_a_group_can_be_deleted()
     {
 
         $this->testUser->setPreference('language', 'fr', "g4");
-        
+
         $this->assertNotEmpty($this->testUser->getPreferences('g4'));
         $this->assertEquals(1, $this->testUser->removePreference('language', 'g4'));
         $this->assertEmpty($this->testUser->getPreferences('g4'));

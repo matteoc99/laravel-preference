@@ -41,7 +41,7 @@ enum Cast: string implements CastableEnum
             self::FLOAT => (float)$value,
             self::STRING => $value,
             self::BOOL => !empty($value),
-            self::ARRAY => json_encode($value, 1),
+            self::ARRAY => json_decode($value, 1),
             self::DATE, self::DATETIME => new Carbon($value),
             self::TIME => Carbon::now()->setTimeFromTimeString($value),
             self::TIMESTAMP => Carbon::createFromTimestamp($value),
@@ -50,7 +50,7 @@ enum Cast: string implements CastableEnum
 
     public function castToString(mixed $value): string
     {
-        $this->ensureType($value);
+        $value = $this->ensureType($value);
 
         return match ($this) {
             self::BOOL, self::INT, self::FLOAT, self::STRING => (string)$value,
@@ -62,45 +62,47 @@ enum Cast: string implements CastableEnum
         };
     }
 
-    private function ensureType(mixed $value): void
+    private function ensureType(mixed $value): mixed
     {
-        $type = gettype($value);
 
         switch ($this) {
             case self::INT:
-                if ($type !== 'integer') {
-                    throw ValidationException::withMessages(["Expected an integer for cast INT, got $type"]);
-                }
+                $value = intval($value);
                 break;
             case self::FLOAT:
-                if (!in_array($type, ['double', 'float'])) {
-                    throw ValidationException::withMessages(["Expected a float or double for cast FLOAT, got $type"]);
-                }
+                $value = floatval($value);
                 break;
             case self::STRING:
-                if ($type !== 'string') {
-                    throw  ValidationException::withMessages(["Expected a string for cast STRING, got $type"]);
-                }
+                $value = (string)$value;
                 break;
             case self::BOOL:
-                if ($type !== 'boolean') {
-                    throw ValidationException::withMessages(["Expected a boolean for cast BOOL, got $type"]);
-                }
-                break;
+                return !empty($value);
             case self::ARRAY:
-                if ($type !== 'array') {
-                    throw ValidationException::withMessages(["Expected an array for cast ARRAY, got $type"]);
+                if (!is_array($value)) {
+                    $value = json_decode($value, true);
                 }
                 break;
-            case self::DATETIME:
             case self::TIMESTAMP:
+                if (!($value instanceof Carbon)) {
+                    $value = Carbon::createFromTimestamp($value);
+                }
+            case self::DATETIME:
             case self::DATE:
                 if (!($value instanceof Carbon)) {
-                    throw ValidationException::withMessages(["Expected a Carbon instance to cast, got $type"]);
+                    try {
+                        $value = Carbon::parse($value);  // Attempt to parse various date/time formats
+                    } catch (\Exception $e) {
+                        throw ValidationException::withMessages(["Invalid format for cast to DATETIME, DATE, or TIME"]);
+                    }
+                }
+            case self::TIME:
+                if (!($value instanceof Carbon)) {
+                    $value = Carbon::now()->setTimeFromTimeString($value);
                 }
                 break;
             default:
                 throw ValidationException::withMessages(["Unknown casting type"]);
         }
+        return $value;
     }
 }

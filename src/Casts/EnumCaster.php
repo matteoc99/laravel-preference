@@ -12,7 +12,7 @@ class EnumCaster implements CastsAttributes
 {
 
 
-    public function get(Model $model, string $key, mixed $value, array $attributes): CastableEnum|null
+    public function get(?Model $model, string $key, mixed $value, array $attributes): CastableEnum|null
     {
         return $this->deserializeEnum($value);
     }
@@ -33,7 +33,7 @@ class EnumCaster implements CastsAttributes
         return $enumClass::tryFrom($value['value']);
     }
 
-    public function set(Model $model, string $key, mixed $value, array $attributes)
+    public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
         return json_encode($this->serializeEnum($value));
     }

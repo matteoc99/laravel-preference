@@ -10,7 +10,7 @@ use Matteoc99\LaravelPreference\Rules\DataRule;
 
 class RuleCaster implements CastsAttributes
 {
-    public function get(Model $model, string $key, mixed $value, array $attributes)
+    public function get(?Model $model, string $key, mixed $value, array $attributes)
     {
         return $this->deserializerRule($value);
     }
@@ -38,7 +38,7 @@ class RuleCaster implements CastsAttributes
         return $rule;
     }
 
-    public function set(Model $model, string $key, mixed $value, array $attributes)
+    public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
         return json_encode($this->serializeRule($value));
     }

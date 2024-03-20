@@ -5,6 +5,7 @@ namespace Matteoc99\LaravelPreference\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
+use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
 
 class PreferenceBuilderBulkTest extends TestCase
@@ -106,10 +107,10 @@ class PreferenceBuilderBulkTest extends TestCase
 
         $this->assertDatabaseCount('preferences', 2);
         $this->assertDatabaseHas('preferences', ['name' => 'new_pref']);
-        $this->assertDatabaseHas('preferences', [
-            'name' => 'existing_pref',
-            'cast' => Cast::INT->value,
-        ]);
+
+        $found = Preference::query()->where('name',"=",'existing_pref');
+        $this->assertEquals(1, $found->count());
+        $this->assertEquals(Cast::INT, $found->first()->cast);
     }
 
     public function delete_bulk_does_not_deletes_all_matching_preferences_when_multiple_exist()

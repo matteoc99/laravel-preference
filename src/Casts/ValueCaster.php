@@ -9,7 +9,9 @@ use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 class ValueCaster implements CastsAttributes
 {
 
-    public function get(Model $model, string $key, mixed $value, array $attributes)
+    public function __construct(protected ?CastableEnum $caster = null) { }
+
+    public function get(?Model $model, string $key, mixed $value, array $attributes)
     {
         $caster = $this->getCaster($model);
 
@@ -22,7 +24,7 @@ class ValueCaster implements CastsAttributes
 
     }
 
-    public function set(Model $model, string $key, mixed $value, array $attributes)
+    public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
         $caster = $this->getCaster($model);
 
@@ -34,9 +36,9 @@ class ValueCaster implements CastsAttributes
         return $value;
     }
 
-    private function getCaster(Model $model): CastableEnum|null
+    private function getCaster(?Model $model): CastableEnum|null
     {
-        $caster = $model->cast ?? $model->preference?->cast ?? null;
+        $caster = $this->caster ?? $model?->cast ?? $model?->preference?->cast ?? null;
 
         return $caster instanceof CastableEnum ? $caster : null;
     }

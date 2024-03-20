@@ -1,7 +1,3 @@
-#  
-
-# work in progress
-
 # Laravel User Preferences
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/matteoc99/laravel-preference.svg?style=flat-square)](https://packagist.org/packages/matteoc99/laravel-preference)
@@ -223,7 +219,7 @@ class MyRule extends DataRule
 
 ## Test
 
-`composer test ./tests`
+`composer test <path>`
 
 ## Security Vulnerabilities
 
@@ -232,6 +228,7 @@ Please review [our security policy](SECURITY.md) on how to report security vulne
 ## Credits
 
 - [matteoc99](https://github.com/mattoc99)
+- [Joel Brown](https://stackoverflow.com/users/659653/joel-brown) for [this](https://stackoverflow.com/questions/10204902/database-design-for-user-settings/10228192#10228192) awesome starting point and initial inspiration
 
 ## License
 

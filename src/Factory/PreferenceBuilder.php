@@ -3,6 +3,9 @@
 namespace Matteoc99\LaravelPreference\Factory;
 
 use Illuminate\Database\Eloquent\Builder;
+use Matteoc99\LaravelPreference\Casts\EnumCaster;
+use Matteoc99\LaravelPreference\Casts\RuleCaster;
+use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\HasValidation;
 use Matteoc99\LaravelPreference\Enums\Cast;
@@ -101,6 +104,26 @@ class PreferenceBuilder
                 );
             }
 
+            if (!empty($preferenceData['default_value']) && !empty($preferenceData['rule']) && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s default_value fails the validation rule", $key)
+                );
+            }
+
+            //cast values for DB
+
+            if(array_key_exists('rule',$preferenceData)){
+                $ruleCaster = new RuleCaster();
+                $preferenceData['rule'] = $ruleCaster->set(null,'',$preferenceData['rule'],[]);
+            }
+            if(array_key_exists('default_value',$preferenceData)){
+                $valueCaster = new ValueCaster($preferenceData['cast']);
+                $preferenceData['default_value'] = $valueCaster->set(null,'',$preferenceData['default_value'],[]);
+            }
+
+            $enumCaster = new EnumCaster();
+            $preferenceData['cast'] = $enumCaster->set(null,'',$preferenceData['cast'],[]);
+
             // Ensure Defaults
             $preferenceData = array_merge([
                 'group'         => 'general',
@@ -108,13 +131,6 @@ class PreferenceBuilder
                 'description'   => '',
                 'rule'          => null,
             ], $preferenceData);
-
-            if ($preferenceData['default_value'] && $preferenceData['rule'] && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
-                throw new \InvalidArgumentException(
-                    sprintf("index: #%s default_value fails the validation rule", $key)
-                );
-            }
-
         }
 
         Preference::upsert($preferences, ['name', 'group']);

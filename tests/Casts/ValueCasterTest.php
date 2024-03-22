@@ -16,6 +16,10 @@ class ValueCasterTest extends CasterTestCase
     {
         $caster = new ValueCaster();
 
+        $this->dummyPref->cast = Cast::BOOL;
+        $result                = $caster->get($this->dummyPref, '', false, []);
+        $this->assertFalse($result);
+
         // With Int Cast
         $this->dummyPref->cast = Cast::INT;
         $result                = $caster->get($this->dummyPref, '', '123', []);
@@ -61,6 +65,12 @@ class ValueCasterTest extends CasterTestCase
         $this->assertInstanceOf(\Carbon\Carbon::class, $result);
         $this->assertEquals($timestamp, $result->getTimestamp());
 
+
+        $this->dummyPref->cast = null;
+        $val                   = 12345;
+        $result                = $caster->get($this->dummyPref, '', $val, []);
+        $this->assertEquals($val, $result);
+
     }
 
     /** @test */
@@ -101,6 +111,11 @@ class ValueCasterTest extends CasterTestCase
         $result                = $caster->set($this->dummyPref, '', $timestamp, []);
         $this->assertEquals((string)$timestamp, $result);
 
+
+        $this->dummyPref->cast = null;
+        $val                   = 12345;
+        $result                = $caster->set($this->dummyPref, '', $val, []);
+        $this->assertEquals($val, $result);
     }
 
 }

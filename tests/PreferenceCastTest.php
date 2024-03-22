@@ -36,10 +36,10 @@ class PreferenceCastTest extends TestCase
 
     public function tearDown(): void
     {
-        PreferenceBuilder::init("volume")->delete();
-        PreferenceBuilder::init("receive_emails")->delete();
-        PreferenceBuilder::init("birthday")->delete();
-        PreferenceBuilder::init("timezone")->delete();
+        PreferenceBuilder::delete("volume");
+        PreferenceBuilder::delete("receive_emails");
+        PreferenceBuilder::delete("birthday");
+        PreferenceBuilder::delete("timezone");
 
         parent::tearDown();
     }
@@ -55,6 +55,7 @@ class PreferenceCastTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->testUser->setPreference('volume', 6);
     }
+
     /** @test */
     public function user_can_set_and_get_boolean_preference()
     {

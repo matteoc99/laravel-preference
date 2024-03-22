@@ -64,10 +64,7 @@ php artisan migrate
      */
     public function down(): void
     {
-        PreferenceBuilder::init("language")
-        // optional if there  is only one language preference
-        ->withGroup('general')
-        ->delete();
+        PreferenceBuilder::delete("language");
     }
 ```
 #### Bulk mode
@@ -135,7 +132,7 @@ public function getPreference(string $name, string $group = 'general', mixed $de
     $user->getPreference('language'); // 'de' as string
 
     $user->setPreference('language',"fr"); 
-    // ValidationException because of the rule: ->withRule(new InRule(["en","it","de"]))
+    // ValidationException because of the rule: ->withRule(new InRule("en","it","de"))
     $user->setPreference('language',2); 
     // ValidationException because of the cast: Cast::STRING
 

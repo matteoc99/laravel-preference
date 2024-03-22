@@ -18,7 +18,7 @@ use Matteoc99\LaravelPreference\Contracts\HasValidation;
  * @property string             $group
  * @property string             $name
  * @property string|null        $description
- * @property CastableEnum       $cast
+ * @property CastableEnum|null  $cast
  * @property HasValidation|null $rule
  * @property mixed              $default_value
  * @property Carbon             $created_at

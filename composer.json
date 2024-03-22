@@ -21,7 +21,8 @@
   },
   "scripts" : {
     "analyse" : "vendor/bin/phpstan analyse",
-    "test" : "vendor/bin/phpunit"
+    "test" : "vendor/bin/phpunit",
+    "coverage" : " php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

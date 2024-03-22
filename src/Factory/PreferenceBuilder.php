@@ -26,6 +26,17 @@ class PreferenceBuilder
         return $builder->withName($name)->withCast($cast)->withGroup('general');
     }
 
+    public static function delete(string $name, string $group = 'general'): int
+    {
+        $query = Preference::query()->where('name', $name);
+
+        if ($query->count() > 1) {
+            $query->where('group', $group);
+        }
+
+        return $query->delete();
+    }
+
     private function withCast(CastableEnum $cast): static
     {
         $this->preference->cast = $cast;
@@ -74,17 +85,6 @@ class PreferenceBuilder
         return $this->preference;
     }
 
-    public function delete(): int
-    {
-        $query = Preference::query()->where('name', $this->preference->name);
-
-        if ($query->count() > 1) {
-            $query->where('group', $this->preference->group);
-        }
-
-        return $query->delete();
-    }
-
     public static function initBulk(array $preferences)
     {
         if (empty($preferences)) {
@@ -112,17 +112,17 @@ class PreferenceBuilder
 
             //cast values for DB
 
-            if(array_key_exists('rule',$preferenceData)){
-                $ruleCaster = new RuleCaster();
-                $preferenceData['rule'] = $ruleCaster->set(null,'',$preferenceData['rule'],[]);
+            if (array_key_exists('rule', $preferenceData)) {
+                $ruleCaster             = new RuleCaster();
+                $preferenceData['rule'] = $ruleCaster->set(null, '', $preferenceData['rule'], []);
             }
-            if(array_key_exists('default_value',$preferenceData)){
-                $valueCaster = new ValueCaster($preferenceData['cast']);
-                $preferenceData['default_value'] = $valueCaster->set(null,'',$preferenceData['default_value'],[]);
+            if (array_key_exists('default_value', $preferenceData)) {
+                $valueCaster                     = new ValueCaster($preferenceData['cast']);
+                $preferenceData['default_value'] = $valueCaster->set(null, '', $preferenceData['default_value'], []);
             }
 
-            $enumCaster = new EnumCaster();
-            $preferenceData['cast'] = $enumCaster->set(null,'',$preferenceData['cast'],[]);
+            $enumCaster             = new EnumCaster();
+            $preferenceData['cast'] = $enumCaster->set(null, '', $preferenceData['cast'], []);
 
             // Ensure Defaults
             $preferenceData = array_merge([

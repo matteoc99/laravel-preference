@@ -35,6 +35,10 @@ class EnumCaster implements CastsAttributes
 
     public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
+        if (empty($value)) {
+            return null;
+        }
+
         return json_encode($this->serializeEnum($value));
     }
 

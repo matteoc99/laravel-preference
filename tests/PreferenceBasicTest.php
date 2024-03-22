@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\InRule;
-use Matteoc99\LaravelPreference\Tests\Models\User;
+use function PHPUnit\Framework\assertEquals;
 
 class PreferenceBasicTest extends TestCase
 {
@@ -25,8 +25,7 @@ class PreferenceBasicTest extends TestCase
 
     public function tearDown(): void
     {
-        PreferenceBuilder::init("language")
-            ->delete();
+        PreferenceBuilder::delete("language");
 
         parent::tearDown();
     }
@@ -77,6 +76,25 @@ class PreferenceBasicTest extends TestCase
 
         // Try to set an invalid preference
         $this->testUser->setPreference('language', 2);
+    }
+
+    /** @test */
+    public function init_and_delete()
+    {
+        PreferenceBuilder::init("video")
+            ->withDescription("video quality")
+            ->create();
+        PreferenceBuilder::init("video")
+            ->withGroup('test')
+            ->withDescription("video quality")
+            ->create();
+
+        $this->testUser->setPreference('video', "144p", 'test');
+
+        PreferenceBuilder::delete('video');
+
+        $this->assertEquals('144p',$this->testUser->getPreference('video','test'));
+
     }
 
 

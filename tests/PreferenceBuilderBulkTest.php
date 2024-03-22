@@ -108,7 +108,7 @@ class PreferenceBuilderBulkTest extends TestCase
         $this->assertDatabaseCount('preferences', 2);
         $this->assertDatabaseHas('preferences', ['name' => 'new_pref']);
 
-        $found = Preference::query()->where('name',"=",'existing_pref');
+        $found = Preference::query()->where('name', "=", 'existing_pref');
         $this->assertEquals(1, $found->count());
         $this->assertEquals(Cast::INT, $found->first()->cast);
     }
@@ -138,6 +138,23 @@ class PreferenceBuilderBulkTest extends TestCase
         // Might need to adjust expected behavior based on your implementation
         $this->expectException(\InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
+    }
+
+    /** @test */
+
+    public function init_bulk_with_all_options()
+    {
+        $preferences = [
+            ['name' => 'pref2', 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
+            ['name' => 'pref2', 'group' => 'test', 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
+        ];
+
+        PreferenceBuilder::initBulk($preferences);
+        $this->assertDatabaseCount('preferences', 2);
+
+        PreferenceBuilder::deleteBulk($preferences);
+        $this->assertDatabaseCount('preferences', 0);
+
     }
 
 }

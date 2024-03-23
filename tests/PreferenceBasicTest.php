@@ -2,16 +2,12 @@
 
 namespace Matteoc99\LaravelPreference\Tests;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\InRule;
-use function PHPUnit\Framework\assertEquals;
 
 class PreferenceBasicTest extends TestCase
 {
-    use WithFaker, RefreshDatabase;
 
     public function setUp(): void
     {
@@ -93,7 +89,7 @@ class PreferenceBasicTest extends TestCase
 
         PreferenceBuilder::delete('video');
 
-        $this->assertEquals('144p',$this->testUser->getPreference('video','test'));
+        $this->assertEquals('144p', $this->testUser->getPreference('video', 'test'));
 
     }
 

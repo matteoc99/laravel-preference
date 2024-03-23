@@ -3,11 +3,13 @@
 namespace Matteoc99\LaravelPreference\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Matteoc99\LaravelPreference\PreferenceServiceProvider;
 use Matteoc99\LaravelPreference\Tests\Models\User;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
+    use RefreshDatabase;
 
     protected User $testUser;
 
@@ -55,6 +57,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'driver'   => 'sqlite',
             'database' => ':memory:',
             'prefix'   => '',
+            'foreign_key_constraints'   => true,
         ]);
     }
 

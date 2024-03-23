@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Models;
 
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Carbon;
 use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
@@ -48,7 +49,18 @@ class Preference extends BaseModel
 
     public function getValidationRules(): array
     {
-        return array_merge(explode('|', $this->cast->validation()), [$this?->rule]);
+        $rule = $this->cast?->validation();
+        if (empty($rule)) return [$this?->rule];
+
+        if (!is_array($rule)) {
+            if ($rule instanceof Rule) {
+                $rule = [$rule];
+            } else {
+                $rule = explode('|', $rule);
+            }
+        }
+
+        return array_merge($rule, [$this?->rule]);
     }
 
 }

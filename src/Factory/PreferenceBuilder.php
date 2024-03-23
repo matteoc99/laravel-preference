@@ -10,6 +10,8 @@ use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\HasValidation;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Models\Preference;
+use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use UnitEnum;
 
 class PreferenceBuilder
 {
@@ -20,14 +22,15 @@ class PreferenceBuilder
         $this->preference = new Preference();
     }
 
-    public static function init(string $name, CastableEnum $cast = Cast::STRING): static
+    public static function init(UnitEnum|string $name, CastableEnum $cast = Cast::STRING): static
     {
         $builder = new PreferenceBuilder();
-        return $builder->withName($name)->withCast($cast)->withGroup('general');
+        return $builder->withName($name)->withCast($cast);
     }
 
-    public static function delete(string $name, string $group = 'general'): int
+    public static function delete(UnitEnum|string $name, string $group = null): int
     {
+        SerializeHelper::conformNameAndGroup($name, $group);
         $query = Preference::query()->where('name', $name);
 
         if ($query->count() > 1) {
@@ -43,12 +46,22 @@ class PreferenceBuilder
         return $this;
     }
 
-    private function withName(string $name): static
+    private function withName(UnitEnum|string $name): static
     {
-        $this->preference->name = $name;
+        SerializeHelper::conformNameAndGroup($name, $group);
+
+        $this->preference->name  = $name;
+        $this->preference->group = $group;
         return $this;
     }
 
+    /**
+     * @param string $group
+     *
+     * @return $this
+     * @deprecated
+     *
+     */
     public function withGroup(string $group): static
     {
         $this->preference->group = $group;
@@ -92,6 +105,10 @@ class PreferenceBuilder
         }
 
         foreach ($preferences as $key => &$preferenceData) {
+            if (empty($preferenceData['cast'])) {
+                $preferenceData['cast'] = Cast::STRING;
+            }
+
             if (empty($preferenceData['name'])) {
                 throw new \InvalidArgumentException(
                     sprintf("index: #%s name is required", $key)
@@ -110,7 +127,7 @@ class PreferenceBuilder
                 );
             }
 
-            //cast values for DB
+            SerializeHelper::conformNameAndGroup($preferenceData['name'], $preferenceData['group']);
 
             if (array_key_exists('rule', $preferenceData)) {
                 $ruleCaster             = new RuleCaster();
@@ -149,13 +166,15 @@ class PreferenceBuilder
                     sprintf("index: #%s name is required", $key)
                 );
             }
+
+            SerializeHelper::conformNameAndGroup($preferenceData['name'], $preferenceData['group']);
+
             $query->orWhere(function (Builder $query) use ($preferenceData) {
                 $query->where('name', $preferenceData['name']);
-                $query->where('group', $preferenceData['group'] ?? 'general');
+                $query->where('group', $preferenceData['group']);
             });
         }
 
         return $query->delete();
     }
-
 }

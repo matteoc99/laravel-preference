@@ -8,8 +8,6 @@ use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 
 class PreferenceGroupsTest extends TestCase
 {
-    use WithFaker, RefreshDatabase;
-
     public function setUp(): void
     {
         parent::setUp();

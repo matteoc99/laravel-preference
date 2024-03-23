@@ -2,12 +2,12 @@
 
 namespace Matteoc99\LaravelPreference\Contracts;
 
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Rule;
 
 interface CastableEnum extends \BackedEnum
 {
 
-    public function validation(): Rule|string;
+    public function validation(): Rule|array|string;
 
 
     public function castToString(mixed $value): string;

@@ -3,9 +3,11 @@
 namespace Matteoc99\LaravelPreference\Enums;
 
 use Carbon\Carbon;
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
+use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
+use Matteoc99\LaravelPreference\Utils\SerializeHelper;
 
 
 enum Cast: string implements CastableEnum
@@ -20,7 +22,9 @@ enum Cast: string implements CastableEnum
     case DATETIME = 'datetime';
     case TIMESTAMP = 'timestamp';
 
-    public function validation(): Rule|string
+    case BACKED_ENUM = 'backed_enum';
+
+    public function validation(): Rule|array|string
     {
         return match ($this) {
             self::INT => 'integer',
@@ -31,6 +35,7 @@ enum Cast: string implements CastableEnum
             self::DATE, self::DATETIME => 'date',
             self::TIME => 'date_format:H:i',
             self::TIMESTAMP => 'date_format:U',
+            self::BACKED_ENUM => new InstanceOfRule(\BackedEnum::class),
         };
     }
 
@@ -45,6 +50,7 @@ enum Cast: string implements CastableEnum
             self::DATE, self::DATETIME => new Carbon($value),
             self::TIME => Carbon::now()->setTimeFromTimeString($value),
             self::TIMESTAMP => Carbon::createFromTimestamp($value),
+            self::BACKED_ENUM => SerializeHelper::deserializeEnum($value),
         };
     }
 
@@ -59,6 +65,7 @@ enum Cast: string implements CastableEnum
             self::DATETIME => $value->toDateTimeString(),
             self::TIMESTAMP => $value->timestamp,
             self::TIME => $value->toTimeString(),
+            self::BACKED_ENUM => SerializeHelper::serializeEnum($value),
         };
     }
 
@@ -98,6 +105,11 @@ enum Cast: string implements CastableEnum
             case self::TIME:
                 if (!($value instanceof Carbon)) {
                     $value = Carbon::now()->setTimeFromTimeString($value);
+                }
+                break;
+            case self::BACKED_ENUM:
+                if (!($value instanceof \BackedEnum)) {
+                    throw ValidationException::withMessages(["Wrong type for Backed enum casting"]);
                 }
                 break;
             default:

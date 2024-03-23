@@ -2,14 +2,14 @@
 
 namespace Matteoc99\LaravelPreference\Tests\Models;
 
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Rule;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 enum CustomCast: string implements CastableEnum
 {
     case TIMEZONE = 'tz';
 
-    public function validation(): Rule|string
+    public function validation(): Rule|array|string
     {
         return match ($this) {
             self::TIMEZONE => 'timezone:all',

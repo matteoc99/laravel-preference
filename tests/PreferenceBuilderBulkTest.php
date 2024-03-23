@@ -2,7 +2,6 @@
 
 namespace Matteoc99\LaravelPreference\Tests;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
@@ -10,9 +9,7 @@ use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
 
 class PreferenceBuilderBulkTest extends TestCase
 {
-    use RefreshDatabase;
 
-    // Reset the database after each test
 
     /** @test */
     public function init_bulk_throws_exception_with_empty_preferences_array()

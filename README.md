@@ -37,34 +37,40 @@ php artisan migrate
 
 ### Concepts
 
-> Preferences are defined by their name, and optionally grouped
-
+> Preferences are defined by their name
+> 
 > Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
->> The default caster supports all major primitives, including datetime/date and timestamp which get converted
-> > with `Carbon/Carbon`
+>> The default caster supports all major primitives, Enums, as well as time/datetime/date and timestamp which get converted
+>> with `Carbon/Carbon`
 
 ### Create a Preference
 #### single mode
 ```php
- public function up(): void
+    public function up(): void
     {
-        PreferenceBuilder::init("language")
+        PreferenceBuilder::init(Preferences::LANGUAGE)
             ->withDefaultValue("en")
-            // optional ->withGroup('general')
             ->withRule(new InRule("en", "it", "de"))
             ->create();
             
-            // Or
-            PreferenceBuilder::init("language")->create()
-
+       
+        // Or
+        PreferenceBuilder::init(Preferences::LANGUAGE)->create()
+        // different enums with the same value do not conflict
+        PreferenceBuilder::init(OtherPreferences::LANGUAGE)->create()
+        
+        // update
+        PreferenceBuilder::init(Preferences::LANGUAGE)
+            ->withRule(new InRule("en", "it", "de"))
+            ->updateOrCreate()
+            
+        // Discouraged, consider using Enums
+        PreferenceBuilder::init("language")->create()
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        PreferenceBuilder::delete("language");
+        PreferenceBuilder::delete(Preferences::LANGUAGE);
     }
 ```
 #### Bulk mode
@@ -98,9 +104,10 @@ return new class extends Migration {
     public function preferences(): array
     {
        return [
-           ['name' => 'language', 'cast' => Cast::STRING, 'default_value' => 'en', 'rule' => new InRule("en", "it", "de"), 'group' => 'general'],
-           ['name' => 'theme', 'cast' => Cast::STRING, 'default_value' => 'light'],
-            ['name' => 'configuration', 'cast' => Cast::ARRAY],
+            ['name' => Preferences::LANGUAGE, 'cast' => Cast::STRING, 'default_value' => 'en', 'rule' => new InRule("en", "it", "de")],
+            ['name' => Preferences::THEME, 'cast' => Cast::STRING, 'default_value' => 'light'],
+            ['name' => Preferences::CONFIGURATION, 'cast' => Cast::ARRAY],
+            ['name' => Preferences::CONFIGURATION, 'cast' => Cast::ARRAY],
        ];
     }
 };
@@ -111,33 +118,43 @@ return new class extends Migration {
 
 > use the trait `HasPreferences`
 
+> string will be deprecated, consider sticking to `UnitEnum`
+
 ```php
 // remove a preference, reverting it to the default value if set.
-public function removePreference(string $name, string $group = 'general'): void
+public function removePreference(UnitEnum|string $name, string $group = null): void
 
 // set / update a preference 
-public function setPreference(string $name, mixed $value, string $group = 'general'): void
+public function setPreference(UnitEnum|string $name, mixed $value, string $group = null): void
 
 // collection of UserPreferences | optional filter by group    
 public function getPreferences(string $group = null): Collection
 
 // get the value of the preference | if no value or default_value are found, returns $default
-public function getPreference(string $name, string $group = 'general', mixed $default = null): mixed
+public function getPreference(UnitEnum|string $name, string $group = null, mixed $default = null): mixed
 ```
 
 ### Examples
 
 ```php
-    $user->setPreference('language',"de");
-    $user->getPreference('language'); // 'de' as string
+    $user->setPreference(UserPreferences::LANGUAGE,"de");
+    $user->getPreference(UserPreferences::LANGUAGE,); // 'de' as string
 
-    $user->setPreference('language',"fr"); 
+    $user->setPreference(UserPreferences::LANGUAGE,,"fr"); 
     // ValidationException because of the rule: ->withRule(new InRule("en","it","de"))
-    $user->setPreference('language',2); 
+    $user->setPreference(UserPreferences::LANGUAGE,,2); 
     // ValidationException because of the cast: Cast::STRING
 
-    $user->removePreference('language'); 
-    $user->getPreference('language'); // 'en' as string
+    $user->removePreference(UserPreferences::LANGUAGE); 
+    $user->getPreference(UserPreferences::LANGUAGE,); // 'en' as string
+    
+    // Or with Enums
+    $user->setPreference(UserPreferences::LANGUAGE,"de");
+    $user->setPreference(UserPreferences::THEME,"light");
+    // get all of type UserPreferences
+    $user->getPreferences(UserPreferences::class)
+    //get all
+    $user->getPreferences()
 ```
 
 ## Casting
@@ -147,21 +164,21 @@ public function getPreference(string $name, string $group = 'general', mixed $de
 
 ### Available Casts
 
-INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP
+INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP, BACKED_ENUM
 
 ### Custom Caster
 
 create a `BackedEnum`, and implement `CastableEnum`
 
 ```php
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Rule;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 enum MyCast: string implements CastableEnum
 {
     case TIMEZONE = 'tz';
  
-    public function validation(): Rule|string
+    public function validation(): Rule|array|string
     {
         return match ($this) {
             self::TIMEZONE => 'timezone:all',
@@ -214,9 +231,25 @@ class MyRule extends DataRule
             ->withRule(new MyRule("Europe","Asia"))
 ```
 
+## Deprecation plans
+
+### HasValidation for custom Rules
+`HasValidation` will be deprecated in version >2.x, since Laravel is Deprecating the Rule Contract
+
+### string names
+string `name` for preferences, will be removed in version >2.x, consider using enums, as its the direction this package will take.
+
+### groups
+for preferences is deprecated and creating groups will be removed with version 2.x
+> groups created with version 1.x will however be still supported. 
+> 
+> the intended use for groups is internal only in combination with enum names
+
 ## Test
 
 `composer test <path>`
+
+`composer coverage`
 
 ## Security Vulnerabilities
 

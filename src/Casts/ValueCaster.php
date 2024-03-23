@@ -13,6 +13,8 @@ class ValueCaster implements CastsAttributes
 
     public function get(?Model $model, string $key, mixed $value, array $attributes)
     {
+        if (is_null($value)) return null;
+
         $caster = $this->getCaster($model);
 
         if ($caster) {
@@ -26,6 +28,8 @@ class ValueCaster implements CastsAttributes
 
     public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
+        if (is_null($value)) return null;
+
         $caster = $this->getCaster($model);
 
         if ($caster) {

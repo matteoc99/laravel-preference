@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
+use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use UnitEnum;
 
 trait HasPreferences
 {
@@ -20,14 +22,15 @@ trait HasPreferences
     /**
      * Retrieve a preference value, prioritizing user settings, then defaults.
      *
-     * @param string     $name
-     * @param string     $group
-     * @param mixed|null $default
+     * @param UnitEnum|string $name
+     * @param string|null     $group
+     * @param mixed|null      $default
      *
      * @return mixed
      */
-    public function getPreference(string $name, string $group = 'general', mixed $default = null)
+    public function getPreference(UnitEnum|string $name, string $group = null, mixed $default = null)
     {
+        SerializeHelper::conformNameAndGroup($name, $group);
         $userPreference = $this->userPreferences()->with('preference')
             ->whereHas('preference', function ($query) use ($group, $name) {
                 $query->where('group', $group)->where('name', $name);
@@ -45,7 +48,7 @@ trait HasPreferences
      *
      * @return mixed
      */
-    private function getDefaultPreferenceValue(string $name, string $group = 'general'): mixed
+    private function getDefaultPreferenceValue(string $name, string $group): mixed
     {
         return Preference::where('group', $group)->where('name', $name)->first()?->default_value ?? null;
     }
@@ -53,15 +56,16 @@ trait HasPreferences
     /**
      * Set a preference value, handling validation and persistence.
      *
-     * @param string $name
-     * @param mixed  $value
-     * @param string $group
+     * @param UnitEnum|string $name
+     * @param mixed           $value
+     * @param string          $group
      *
      * @throws ValidationException
-     * @throws \RuntimeException
      */
-    public function setPreference(string $name, mixed $value, string $group = 'general'): void
+    public function setPreference(UnitEnum|string $name, mixed $value, string $group = null): void
     {
+        SerializeHelper::conformNameAndGroup($name, $group);
+
         /**@var Preference $preference * */
         $preference = Preference::where('group', $group)->where('name', $name)->first();
 
@@ -84,14 +88,16 @@ trait HasPreferences
     /**
      * Remove a preference for the current user.
      *
-     * @param string $name
-     * @param string $group
+     * @param UnitEnum|string $name
+     * @param string          $group
      *
      * @return int
      */
-    public function removePreference(string $name, string $group = 'general'): int
+    public function removePreference(UnitEnum|string $name, string $group = null): int
     {
-       return $this->userPreferences()->whereHas('preference', function ($query) use ($group, $name) {
+        SerializeHelper::conformNameAndGroup($name, $group);
+
+        return $this->userPreferences()->whereHas('preference', function ($query) use ($group, $name) {
             $query->where('group', $group)->where('name', $name);
         })->delete();
     }

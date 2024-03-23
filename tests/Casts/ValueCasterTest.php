@@ -2,14 +2,13 @@
 
 namespace Matteoc99\LaravelPreference\Tests\Casts;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;
+use Matteoc99\LaravelPreference\Tests\Enums\VideoPreferences;
+use Matteoc99\LaravelPreference\Utils\SerializeHelper;
 
 class ValueCasterTest extends CasterTestCase
 {
-    use WithFaker, RefreshDatabase;
 
     /** @test */
     public function test_get()
@@ -65,6 +64,11 @@ class ValueCasterTest extends CasterTestCase
         $this->assertInstanceOf(\Carbon\Carbon::class, $result);
         $this->assertEquals($timestamp, $result->getTimestamp());
 
+        $this->dummyPref->cast = Cast::BACKED_ENUM;
+        $result                = $caster->get($this->dummyPref, '', SerializeHelper::serializeEnum(VideoPreferences::LANGUAGE), []);
+        $this->assertEquals(VideoPreferences::LANGUAGE, $result);
+        $this->assertEquals(VideoPreferences::LANGUAGE->name, $result->name);
+
 
         $this->dummyPref->cast = null;
         $val                   = 12345;
@@ -111,6 +115,10 @@ class ValueCasterTest extends CasterTestCase
         $result                = $caster->set($this->dummyPref, '', $timestamp, []);
         $this->assertEquals((string)$timestamp, $result);
 
+        $this->dummyPref->cast = Cast::BACKED_ENUM;
+        $result                = $caster->set($this->dummyPref, '', VideoPreferences::LANGUAGE, []);
+        $this->assertEquals(SerializeHelper::serializeEnum(VideoPreferences::LANGUAGE), $result);
+        $this->assertEquals(VideoPreferences::LANGUAGE, SerializeHelper::deserializeEnum($result));
 
         $this->dummyPref->cast = null;
         $val                   = 12345;

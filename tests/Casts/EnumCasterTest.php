@@ -2,14 +2,11 @@
 
 namespace Matteoc99\LaravelPreference\Tests\Casts;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;
 
 class EnumCasterTest extends CasterTestCase
 {
-    use WithFaker, RefreshDatabase;
 
     /** @test */
     public function test_get()

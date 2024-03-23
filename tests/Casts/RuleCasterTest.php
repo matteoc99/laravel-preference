@@ -2,14 +2,11 @@
 
 namespace Matteoc99\LaravelPreference\Tests\Casts;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
 use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
 
 class RuleCasterTest extends CasterTestCase
 {
-    use WithFaker, RefreshDatabase;
 
     /** @test */
     public function test_get()

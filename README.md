@@ -5,7 +5,18 @@
 [![Tests](https://github.com/matteoc99/laravel-preference/actions/workflows/tests.yml/badge.svg)](https://github.com/matteoc99/laravel-preference/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/github/matteoc99/laravel-preference/graph/badge.svg?token=GS19E2ORR4)](https://codecov.io/github/matteoc99/laravel-preference)
 
+
 This Laravel package aims to store and manage user settings/preferences in a simple and scalable manner.
+
+## Features
+
+- Type safe Casting, 
+  - for example, Cast::BACKED_ENUM expects and always returns an instantiated enum 
+- Validation from casts and additional rules
+- extensible (Create your own Validation Rules and casts)
+- Enum support
+  - store alle your preferences in one or more enums, to simplify the usage of this package
+
 
 ## Installation
 
@@ -37,11 +48,27 @@ php artisan migrate
 
 ### Concepts
 
-> Preferences are defined by their name
-> 
 > Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
 >> The default caster supports all major primitives, Enums, as well as time/datetime/date and timestamp which get converted
 >> with `Carbon/Carbon`
+
+### Define your preferences
+
+Organize them in one or more enums.
+
+Each enum gets scoped and does not conflict with other enums with the same case
+
+e.g.
+```php
+enum Preferences
+{
+    // can be backed, but its not mandatory
+    case LANGUAGE;
+    case QUALITY;
+    case CONFIG;
+}
+```
+
 
 ### Create a Preference
 #### single mode
@@ -63,9 +90,6 @@ php artisan migrate
         PreferenceBuilder::init(Preferences::LANGUAGE)
             ->withRule(new InRule("en", "it", "de"))
             ->updateOrCreate()
-            
-        // Discouraged, consider using Enums
-        PreferenceBuilder::init("language")->create()
     }
 
     public function down(): void
@@ -114,11 +138,11 @@ return new class extends Migration {
 
 ```
 
-### Working with preferences
+## Working with preferences
 
-> use the trait `HasPreferences`
-
-> string will be deprecated, consider sticking to `UnitEnum`
+ use the trait `HasPreferences` on a model of your choice
+ 
+this gives you access to the following methods
 
 ```php
 // remove a preference, reverting it to the default value if set.
@@ -140,18 +164,16 @@ public function getPreference(UnitEnum|string $name, string $group = null, mixed
     $user->setPreference(UserPreferences::LANGUAGE,"de");
     $user->getPreference(UserPreferences::LANGUAGE,); // 'de' as string
 
-    $user->setPreference(UserPreferences::LANGUAGE,,"fr"); 
+    $user->setPreference(UserPreferences::LANGUAGE,"fr"); 
     // ValidationException because of the rule: ->withRule(new InRule("en","it","de"))
-    $user->setPreference(UserPreferences::LANGUAGE,,2); 
+    $user->setPreference(UserPreferences::LANGUAGE,2); 
     // ValidationException because of the cast: Cast::STRING
 
     $user->removePreference(UserPreferences::LANGUAGE); 
-    $user->getPreference(UserPreferences::LANGUAGE,); // 'en' as string
+    $user->getPreference(UserPreferences::LANGUAGE); // 'en' as string
     
-    // Or with Enums
-    $user->setPreference(UserPreferences::LANGUAGE,"de");
-    $user->setPreference(UserPreferences::THEME,"light");
-    // get all of type UserPreferences
+    // get all of type UserPreferences,
+    // should you use different Preference enums
     $user->getPreferences(UserPreferences::class)
     //get all
     $user->getPreferences()
@@ -160,7 +182,7 @@ public function getPreference(UnitEnum|string $name, string $group = null, mixed
 ## Casting
 
 > set the cast when creating a Preference
->> PreferenceBuilder::init("language", Cast::STRING)
+>> PreferenceBuilder::init(Preferences::LANGUAGE, Cast::STRING)
 
 ### Available Casts
 
@@ -171,8 +193,7 @@ INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP, BACKED_ENUM
 create a `BackedEnum`, and implement `CastableEnum`
 
 ```php
-use Illuminate\Contracts\Validation\Rule;
-use Matteoc99\LaravelPreference\Contracts\CastableEnum;
+use Illuminate\Contracts\Validation\Rule;use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 enum MyCast: string implements CastableEnum
 {
@@ -200,7 +221,7 @@ enum MyCast: string implements CastableEnum
     } 
 }
 
- PreferenceBuilder::init("timezone",MyCast::TIMEZONE)
+ PreferenceBuilder::init(Preferences::TIMEZONE,MyCast::TIMEZONE)
  //->...etc
 
 ```

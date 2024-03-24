@@ -261,9 +261,7 @@ class MyRule extends DataRule
 string `name` for preferences, will be removed in version >2.x, consider using enums, as its the direction this package will take.
 
 ### groups
-for preferences is deprecated and creating groups will be removed with version 2.x
-> groups created with version 1.x will however be still supported. 
-> 
+for preferences is deprecated and creating groups will be removed with version 2.x 
 > the intended use for groups is internal only in combination with enum names
 
 ## Test

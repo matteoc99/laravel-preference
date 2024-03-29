@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
+use Matteoc99\LaravelPreference\Tests\Enums\General;
 use Matteoc99\LaravelPreference\Tests\Enums\OtherPreferences;
 use Matteoc99\LaravelPreference\Tests\Models\CustomCast;
 use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
@@ -17,29 +18,29 @@ class PreferenceCastTest extends TestCase
     {
         parent::setUp();
 
-        PreferenceBuilder::init("volume", Cast::INT)
+        PreferenceBuilder::init(General::VOLUME, Cast::INT)
             ->withRule(new LowerThanRule(5))
             ->withDefaultValue(1)
             ->create();
 
-        PreferenceBuilder::init("receive_emails", Cast::BOOL)
+        PreferenceBuilder::init(General::EMAILS, Cast::BOOL)
             ->withDefaultValue(true)
             ->create();
 
-        PreferenceBuilder::init("birthday", Cast::DATE)->create();
+        PreferenceBuilder::init(General::BIRTHDAY, Cast::DATE)->create();
 
-        PreferenceBuilder::init("timezone", CustomCast::TIMEZONE)->create();
-        PreferenceBuilder::init("preferences", Cast::BACKED_ENUM)->create();
+        PreferenceBuilder::init(General::TIMEZONE, CustomCast::TIMEZONE)->create();
+        PreferenceBuilder::init(General::OPTIONS, Cast::BACKED_ENUM)->create();
 
     }
 
     public function tearDown(): void
     {
-        PreferenceBuilder::delete("volume");
-        PreferenceBuilder::delete("receive_emails");
-        PreferenceBuilder::delete("birthday");
-        PreferenceBuilder::delete("timezone");
-        PreferenceBuilder::delete("preferences");
+        PreferenceBuilder::delete(General::VOLUME);
+        PreferenceBuilder::delete(General::EMAILS);
+        PreferenceBuilder::delete(General::BIRTHDAY);
+        PreferenceBuilder::delete(General::TIMEZONE);
+        PreferenceBuilder::delete(General::OPTIONS);
 
         parent::tearDown();
     }
@@ -47,24 +48,24 @@ class PreferenceCastTest extends TestCase
     /** @test */
     public function user_can_set_and_get_integer_preference_with_custom_rule()
     {
-        $this->testUser->setPreference('volume', 3);
+        $this->testUser->setPreference(General::VOLUME, 3);
 
-        $preference = $this->testUser->getPreference('volume');
+        $preference = $this->testUser->getPreference(General::VOLUME);
         $this->assertEquals(3, $preference);
 
         $this->expectException(ValidationException::class);
-        $this->testUser->setPreference('volume', 6);
+        $this->testUser->setPreference(General::VOLUME, 6);
     }
 
     /** @test */
     public function user_can_set_and_get_boolean_preference()
     {
-        $this->testUser->setPreference('receive_emails', false);
-        $preference = $this->testUser->getPreference('receive_emails');
+        $this->testUser->setPreference(General::EMAILS, false);
+        $preference = $this->testUser->getPreference(General::EMAILS);
         $this->assertFalse($preference);
 
-        $this->testUser->removePreference('receive_emails');
-        $preference = $this->testUser->getPreference('receive_emails');
+        $this->testUser->removePreference(General::EMAILS);
+        $preference = $this->testUser->getPreference(General::EMAILS);
         $this->assertTrue($preference);
     }
 
@@ -73,9 +74,9 @@ class PreferenceCastTest extends TestCase
     {
         $birthday = Carbon::now()->subYears(25);
 
-        $this->testUser->setPreference('birthday', $birthday);
+        $this->testUser->setPreference(General::BIRTHDAY, $birthday);
 
-        $preference = $this->testUser->getPreference('birthday');
+        $preference = $this->testUser->getPreference(General::BIRTHDAY);
 
         $this->assertEquals($birthday->toDateString(), $preference->toDateString());
     }
@@ -83,14 +84,14 @@ class PreferenceCastTest extends TestCase
     /** @test */
     public function user_can_set_and_get_preference_with_custom_cast()
     {
-        $this->testUser->setPreference('timezone', 'Europe/Berlin');
+        $this->testUser->setPreference(General::TIMEZONE, 'Europe/Berlin');
 
-        $preference = $this->testUser->getPreference('timezone');
+        $preference = $this->testUser->getPreference(General::TIMEZONE);
 
         $this->assertEquals('Europe/Berlin', $preference);
 
         $this->expectException(ValidationException::class);
-        $this->testUser->setPreference('timezone', "France");
+        $this->testUser->setPreference(General::TIMEZONE, "France");
     }
 
     /** @test */
@@ -98,13 +99,13 @@ class PreferenceCastTest extends TestCase
     {
 
 
-        $this->testUser->setPreference('preferences', OtherPreferences::CONFIG);
-        $preference = $this->testUser->getPreference('preferences');
+        $this->testUser->setPreference(General::OPTIONS, OtherPreferences::CONFIG);
+        $preference = $this->testUser->getPreference(General::OPTIONS);
         $this->assertEquals(OtherPreferences::CONFIG, $preference);
 
 
         $this->expectException(ValidationException::class);
-        $this->testUser->setPreference('preferences', 'Europe/Berlin');
+        $this->testUser->setPreference(General::OPTIONS, 'Europe/Berlin');
 
     }
 }

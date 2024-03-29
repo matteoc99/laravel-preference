@@ -34,8 +34,8 @@ class RuleCasterTest extends CasterTestCase
         $result = $caster->set($this->dummyPref, '', $rule, []);
         $this->assertEquals(json_encode(['class' => LowerThanRule::class, 'data' => [20]]), $result);
 
-        // Edge Case: Non-HasValidation input
+        // Edge Case: Non-ValidationRule input
         $this->expectException(\InvalidArgumentException::class);
-        $caster->set($this->dummyPref, '', new \stdClass(), []); // Not a HasValidation object
+        $caster->set($this->dummyPref, '', new \stdClass(), []); // Not a ValidationRule object
     }
 }

@@ -3,9 +3,9 @@
 namespace Matteoc99\LaravelPreference\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
-use Matteoc99\LaravelPreference\Contracts\HasValidation;
 use Matteoc99\LaravelPreference\Rules\DataRule;
 
 class RuleCaster implements CastsAttributes
@@ -28,7 +28,7 @@ class RuleCaster implements CastsAttributes
             throw new \InvalidArgumentException("Enum class $class does not exist.");
         }
 
-        /**@var HasValidation $rule * */
+        /**@var ValidationRule $rule * */
         $rule = App::make($class);
 
         if ($rule instanceof DataRule) {
@@ -45,8 +45,8 @@ class RuleCaster implements CastsAttributes
 
     protected function serializeRule($rule): array
     {
-        if (!$rule instanceof HasValidation) {
-            throw new \InvalidArgumentException("Invalid value for HasValidation attribute.");
+        if (!$rule instanceof ValidationRule) {
+            throw new \InvalidArgumentException("Invalid value for ValidationRule attribute.");
         }
 
         $resp = [

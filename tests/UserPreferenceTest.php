@@ -2,11 +2,10 @@
 
 namespace Matteoc99\LaravelPreference\Tests;
 
-use App\Models\User;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
-use Matteoc99\LaravelPreference\Models\UserPreference;
+use Matteoc99\LaravelPreference\Tests\Enums\General;
 
 class UserPreferenceTest extends TestCase
 {
@@ -18,18 +17,18 @@ class UserPreferenceTest extends TestCase
     {
         parent::setUp();
 
-        $this->dummyPref = PreferenceBuilder::init('test',Cast::ARRAY)
+        $this->dummyPref = PreferenceBuilder::init(General::OPTIONS,Cast::ARRAY)
             ->create();
     }
 
 
-
+    /** @test */
     public function test_preferenceable_relationship()
     {
         // 1. Setup: Create necessary models for the polymorphic relationship
         // Example if preferenceable() morphs to a User model
 
-        $this->testUser->setPreference('test',['test'=>"works"]);
+        $this->testUser->setPreference(General::OPTIONS,['test'=>"works"]);
 
         $userPreference = $this->testUser->getPreferences()->first();
 

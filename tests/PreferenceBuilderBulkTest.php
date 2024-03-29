@@ -5,6 +5,9 @@ namespace Matteoc99\LaravelPreference\Tests;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
+use Matteoc99\LaravelPreference\Tests\Enums\General;
+use Matteoc99\LaravelPreference\Tests\Enums\OtherPreferences;
+use Matteoc99\LaravelPreference\Tests\Enums\VideoPreferences;
 use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
 
 class PreferenceBuilderBulkTest extends TestCase
@@ -24,7 +27,7 @@ class PreferenceBuilderBulkTest extends TestCase
     {
         $preferences = [
             ['cast' => Cast::STRING], // 'name' is missing
-            ['name' => 'pref2', 'cast' => Cast::INT],
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::INT],
         ];
 
         $this->expectException(\InvalidArgumentException::class);
@@ -36,42 +39,42 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_correctly_creates_multiple_preferences()
     {
         $preferences = [
-            ['name' => 'pref1', 'cast' => Cast::STRING],
-            ['name' => 'pref2', 'cast' => Cast::INT, 'group' => 'notifications'],
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING],
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::INT],
         ];
 
         PreferenceBuilder::initBulk($preferences);
 
         $this->assertDatabaseCount('preferences', 2);
-        $this->assertDatabaseHas('preferences', ['name' => 'pref1']);
-        $this->assertDatabaseHas('preferences', ['name' => 'pref2', 'group' => 'notifications']);
+        $this->assertDatabaseHas('preferences', ['name' => General::LANGUAGE]);
+        $this->assertDatabaseHas('preferences', ['name' => VideoPreferences::LANGUAGE]);
     }
 
     /** @test */
     public function delete_bulk_deletes_correct_preferences()
     {
         PreferenceBuilder::initBulk([
-            ['name' => 'to_delete1', 'cast' => Cast::STRING],
-            ['name' => 'to_delete2', 'cast' => Cast::INT, 'group' => 'other'],
-            ['name' => 'keep', 'cast' => Cast::BOOL],
+            ['name' => OtherPreferences::CONFIG, 'cast' => Cast::STRING],
+            ['name' => OtherPreferences::QUALITY, 'cast' => Cast::INT],
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL],
         ]);
 
         $deletePreferences = [
-            ['name' => 'to_delete1'],
-            ['name' => 'to_delete2', 'group' => 'other']
+            ['name' => OtherPreferences::CONFIG],
+            ['name' => OtherPreferences::QUALITY]
         ];
 
         PreferenceBuilder::deleteBulk($deletePreferences);
 
         $this->assertDatabaseCount('preferences', 1);
-        $this->assertDatabaseHas('preferences', ['name' => 'keep']);
+        $this->assertDatabaseHas('preferences', ['name' =>  VideoPreferences::LANGUAGE]);
     }
 
     /** @test */
     public function init_bulk_throws_exception_with_invalid_cast()
     {
         $preferences = [
-            ['name' => 'pref1', 'cast' => 'invalid_cast']
+            ['name' => General::LANGUAGE, 'cast' => 'invalid_cast']
         ];
 
         $this->expectException(\InvalidArgumentException::class);
@@ -82,7 +85,7 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_throws_exception_if_rule_validation_fails()
     {
         $preferences = [
-            ['name' => 'pref1', 'cast' => Cast::INT, 'default_value' => 10, 'rule' => new LowerThanRule(5)]
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 10, 'rule' => new LowerThanRule(5)]
         ];
 
         $this->expectException(\InvalidArgumentException::class);
@@ -93,43 +96,32 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_creates_new_and_updates_existing_preferences()
     {
         // Create an initial preference
-        PreferenceBuilder::init('existing_pref')->create();
+        PreferenceBuilder::init(General::LANGUAGE)->create();
 
         $preferences = [
-            ['name' => 'new_pref', 'cast' => Cast::STRING],
-            ['name' => 'existing_pref', 'cast' => Cast::INT],
+            ['name' => General::QUALITY, 'cast' => Cast::STRING],
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT],
         ];
 
         PreferenceBuilder::initBulk($preferences);
 
         $this->assertDatabaseCount('preferences', 2);
-        $this->assertDatabaseHas('preferences', ['name' => 'new_pref']);
+        $this->assertDatabaseHas('preferences', ['name' => General::LANGUAGE]);
 
-        $found = Preference::query()->where('name', "=", 'existing_pref');
+        $found = Preference::query()->where('name', "=", General::LANGUAGE);
         $this->assertEquals(1, $found->count());
         $this->assertEquals(Cast::INT, $found->first()->cast);
     }
 
-    public function delete_bulk_does_not_deletes_all_matching_preferences_when_multiple_exist()
-    {
-        PreferenceBuilder::initBulk([
-            ['name' => 'to_delete', 'cast' => Cast::STRING],
-            ['name' => 'to_delete', 'cast' => Cast::STRING, 'group' => 'other'],
-        ]);
-
-        PreferenceBuilder::deleteBulk([['name' => 'to_delete']]);
-
-        $this->assertDatabaseCount('preferences', 1);
-    }
 
     /** @test */
 
     public function init_bulk_handles_mixed_valid_and_invalid_preferences()
     {
         $preferences = [
-            ['name' => 'pref1', 'cast' => Cast::STRING],
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING],
             ['cast' => Cast::INT], // Missing 'name'
-            ['name' => 'pref2', 'cast' => Cast::BOOL, 'default_value' => 10, 'rule' => new LowerThanRule(5)] // Fails rule
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 10, 'rule' => new LowerThanRule(5)] // Fails rule
         ];
 
         // Might need to adjust expected behavior based on your implementation
@@ -142,12 +134,13 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_with_all_options()
     {
         $preferences = [
-            ['name' => 'pref2', 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
-            ['name' => 'pref2', 'group' => 'test', 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
+            ['name' => General::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
         ];
 
         PreferenceBuilder::initBulk($preferences);
         $this->assertDatabaseCount('preferences', 2);
+        $this->assertEquals(true,$this->testUser->getPreference(General::LANGUAGE));
 
         PreferenceBuilder::deleteBulk($preferences);
         $this->assertDatabaseCount('preferences', 0);

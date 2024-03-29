@@ -2,16 +2,16 @@
 
 namespace Matteoc99\LaravelPreference\Factory;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
-use Matteoc99\LaravelPreference\Contracts\HasValidation;
+use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
-use UnitEnum;
 
 class PreferenceBuilder
 {
@@ -22,13 +22,13 @@ class PreferenceBuilder
         $this->preference = new Preference();
     }
 
-    public static function init(UnitEnum|string $name, CastableEnum $cast = Cast::STRING): static
+    public static function init(PreferenceGroup $name, CastableEnum $cast = Cast::STRING): static
     {
         $builder = new PreferenceBuilder();
         return $builder->withName($name)->withCast($cast);
     }
 
-    public static function delete(UnitEnum|string $name, string $group = null): int
+    public static function delete(PreferenceGroup $name): int
     {
         SerializeHelper::conformNameAndGroup($name, $group);
         $query = Preference::query()->where('name', $name);
@@ -46,7 +46,7 @@ class PreferenceBuilder
         return $this;
     }
 
-    private function withName(UnitEnum|string $name): static
+    private function withName(PreferenceGroup $name): static
     {
         SerializeHelper::conformNameAndGroup($name, $group);
 
@@ -55,18 +55,6 @@ class PreferenceBuilder
         return $this;
     }
 
-    /**
-     * @param string $group
-     *
-     * @return $this
-     * @deprecated
-     *
-     */
-    public function withGroup(string $group): static
-    {
-        $this->preference->group = $group;
-        return $this;
-    }
 
     public function withDefaultValue(mixed $value): static
     {
@@ -80,7 +68,7 @@ class PreferenceBuilder
         return $this;
     }
 
-    public function withRule(HasValidation $rule): static
+    public function withRule(ValidationRule $rule): static
     {
         $this->preference->rule = $rule;
         return $this;
@@ -109,13 +97,13 @@ class PreferenceBuilder
                 $preferenceData['cast'] = Cast::STRING;
             }
 
-            if (empty($preferenceData['name'])) {
+            if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
                 throw new \InvalidArgumentException(
-                    sprintf("index: #%s name is required", $key)
+                    sprintf("index: #%s name is required and needs to be a PreferenceGroup", $key)
                 );
             }
 
-            if (!($preferenceData['cast'] instanceof CastableEnum)) {
+            if (empty($preferenceData['cast']) || !($preferenceData['cast'] instanceof CastableEnum)) {
                 throw new \InvalidArgumentException(
                     sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $key)
                 );
@@ -124,6 +112,12 @@ class PreferenceBuilder
             if (!empty($preferenceData['default_value']) && !empty($preferenceData['rule']) && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
                 throw new \InvalidArgumentException(
                     sprintf("index: #%s default_value fails the validation rule", $key)
+                );
+            }
+
+            if (array_key_exists('group', $preferenceData)) {
+                throw new \InvalidArgumentException(
+                    sprintf("index: #%s group has been deprecated", $key)
                 );
             }
 

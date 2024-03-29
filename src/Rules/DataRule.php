@@ -2,9 +2,9 @@
 
 namespace Matteoc99\LaravelPreference\Rules;
 
-use Matteoc99\LaravelPreference\Contracts\HasValidation;
+use Illuminate\Contracts\Validation\ValidationRule;
 
-abstract class DataRule implements HasValidation
+abstract class DataRule implements ValidationRule
 {
 
     private array $data;

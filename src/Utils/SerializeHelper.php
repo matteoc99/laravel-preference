@@ -3,7 +3,8 @@
 namespace Matteoc99\LaravelPreference\Utils;
 
 use BackedEnum;
-use UnitEnum;
+use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+use RuntimeException;
 
 class SerializeHelper
 {
@@ -42,36 +43,24 @@ class SerializeHelper
         return $enumClass::tryFrom($value['value']);
     }
 
-    public static function enumToString(UnitEnum|string $value): string
+    public static function enumToString(PreferenceGroup|string $value): string
     {
-        if (!$value instanceof UnitEnum) return $value;
+        if (!$value instanceof PreferenceGroup) return $value;
 
-        if ($value instanceof \StringBackedEnum) return $value->value;
-
-        return $value->name;
+        return $value->value;
     }
 
-    public static function conformNameAndGroup(UnitEnum|string &$name, string|null &$group): void
+    public static function conformNameAndGroup(PreferenceGroup|string &$name, string|null &$group): void
     {
         //auto set group scope for enums
         if (empty($group)) {
-            if ($name instanceof UnitEnum) {
+            if ($name instanceof PreferenceGroup) {
                 $group = $name::class;
             } else {
-                $group = "general";
+                throw new RuntimeException('name can not be a string if group is empty ');
             }
-        }else{
-            trigger_error('Setting the group manually is deprecated', E_USER_DEPRECATED);
-        }
-
-
-        if(is_string($name)){
-            trigger_error('Preference Name as String is going to be deprecated in the next major release', E_USER_DEPRECATED);
         }
 
         $name = SerializeHelper::enumToString($name);
-
     }
-
-
 }

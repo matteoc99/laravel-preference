@@ -9,7 +9,7 @@ enum CustomCast: string implements CastableEnum
 {
     case TIMEZONE = 'tz';
 
-    public function validation(): Rule|array|string
+    public function validation(): array|string
     {
         return match ($this) {
             self::TIMEZONE => 'timezone:all',

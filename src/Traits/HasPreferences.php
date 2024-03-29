@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
-use UnitEnum;
 
 trait HasPreferences
 {
@@ -22,13 +22,13 @@ trait HasPreferences
     /**
      * Retrieve a preference value, prioritizing user settings, then defaults.
      *
-     * @param UnitEnum|string $name
-     * @param string|null     $group
-     * @param mixed|null      $default
+     * @param PreferenceGroup|string $name
+     * @param string|null            $group
+     * @param mixed|null             $default
      *
      * @return mixed
      */
-    public function getPreference(UnitEnum|string $name, string $group = null, mixed $default = null)
+    public function getPreference(PreferenceGroup|string $name, mixed $default = null, string $group = null)
     {
         SerializeHelper::conformNameAndGroup($name, $group);
         $userPreference = $this->userPreferences()->with('preference')
@@ -56,14 +56,19 @@ trait HasPreferences
     /**
      * Set a preference value, handling validation and persistence.
      *
-     * @param UnitEnum|string $name
-     * @param mixed           $value
-     * @param string          $group
+     * @param PreferenceGroup|string $name
+     * @param mixed                  $value
+     * @param string|null            $group
      *
      * @throws ValidationException
      */
-    public function setPreference(UnitEnum|string $name, mixed $value, string $group = null): void
+    public function setPreference(PreferenceGroup|string $name, mixed $value, string $group = null): void
     {
+        if(is_string($name) && empty($group)){
+            throw new \RuntimeException('Please use an enum for the Name');
+
+        }
+
         SerializeHelper::conformNameAndGroup($name, $group);
 
         /**@var Preference $preference * */
@@ -72,7 +77,6 @@ trait HasPreferences
         if (!$preference) {
             throw new \RuntimeException('Preference not found.');
         }
-
 
         $validator = Validator::make(['value' => $value], ['value' => $preference->getValidationRules()]);
 
@@ -88,12 +92,12 @@ trait HasPreferences
     /**
      * Remove a preference for the current user.
      *
-     * @param UnitEnum|string $name
-     * @param string          $group
+     * @param PreferenceGroup|string $name
+     * @param string                 $group
      *
      * @return int
      */
-    public function removePreference(UnitEnum|string $name, string $group = null): int
+    public function removePreference(PreferenceGroup|string $name, string $group = null): int
     {
         SerializeHelper::conformNameAndGroup($name, $group);
 

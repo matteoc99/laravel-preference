@@ -3,6 +3,8 @@
 namespace Matteoc99\LaravelPreference\Rules;
 
 
+use Closure;
+
 class InstanceOfRule extends DataRule
 {
 
@@ -23,5 +25,12 @@ class InstanceOfRule extends DataRule
     public function message()
     {
         return sprintf("One of: %s must be implemented", implode(", ", $this->getData()));
+    }
+
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (!$this->passes($attribute, $value)) {
+            $fail($this->message());
+        }
     }
 }

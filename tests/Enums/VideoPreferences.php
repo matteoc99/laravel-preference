@@ -2,7 +2,9 @@
 
 namespace Matteoc99\LaravelPreference\Tests\Enums;
 
-enum VideoPreferences :string
+use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+
+enum VideoPreferences: string implements PreferenceGroup
 {
     case LANGUAGE = "language";
     case QUALITY = "quality";

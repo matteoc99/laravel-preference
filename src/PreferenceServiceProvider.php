@@ -19,6 +19,10 @@ class PreferenceServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__ . '/../config/user_preference.php' => config_path('user_preference.php'),
-        ],'laravel-preference-config');
+        ], 'laravel-preference-config');
+
+        if (config('user_preference.routes.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        }
     }
 }

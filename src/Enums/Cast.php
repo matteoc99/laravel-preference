@@ -4,6 +4,7 @@ namespace Matteoc99\LaravelPreference\Enums;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
@@ -23,8 +24,7 @@ enum Cast: string implements CastableEnum
     case TIMESTAMP = 'timestamp';
 
     case BACKED_ENUM = 'backed_enum';
-
-    public function validation(): Rule|array|string
+    public function validation(): ValidationRule|array|string
     {
         return match ($this) {
             self::INT => 'integer',

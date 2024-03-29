@@ -12,19 +12,15 @@ class EnumCasterTest extends CasterTestCase
     public function test_get()
     {
         $caster = new EnumCaster();
-        // Successful deserialization
         $result = $caster->get($this->dummyPref, '', json_encode(['class' => Cast::class, 'value' => 'int']), []);
         $this->assertEquals(Cast::INT, $result);
 
-        // Null handling
         $result = $caster->get($this->dummyPref, '', null, []);
         $this->assertNull($result);
 
-        // Missing class
         $this->expectException(\InvalidArgumentException::class);
         $caster->get($this->dummyPref, '', json_encode(['class' => 'Foo\Bar', 'value' => 'int']), []);
 
-        // Invalid value
         $this->expectException(\InvalidArgumentException::class);
         $caster->get($this->dummyPref, '', json_encode(['class' => Cast::class, 'value' => 'xyz']), []);
     }
@@ -34,11 +30,9 @@ class EnumCasterTest extends CasterTestCase
     {
         $caster = new EnumCaster();
 
-        // Successful serialization
         $result = $caster->set($this->dummyPref, '', Cast::STRING, []);
         $this->assertEquals(json_encode(['class' => Cast::class, 'value' => 'string']), $result);
 
-        // Invalid input
         $this->expectException(\InvalidArgumentException::class);
         $caster->set($this->dummyPref, '', 'not an enum', []);
     }
@@ -48,11 +42,9 @@ class EnumCasterTest extends CasterTestCase
     {
         $caster = new EnumCaster();
 
-        // Missing 'class' field
         $this->expectException(\InvalidArgumentException::class);
         $caster->get($this->dummyPref, '', json_encode(['value' => 'int']), []);
 
-        // 'value' field with the wrong type
         $this->expectException(\InvalidArgumentException::class);
         $caster->get($this->dummyPref, '', json_encode(['class' => Cast::class, 'value' => 123]), []);
     }

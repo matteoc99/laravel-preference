@@ -88,8 +88,6 @@ class CastTest extends TestCase
 
         $this->assertTrue(Validator::make(["value" => '2023-03-20'], ['value' => $cast->validation()])->passes());
 
-        // Add tests with other valid date formats you might support
-
         $this->assertFalse(Validator::make(["value" => 'hello'], ['value' => $cast->validation()])->passes());
         $this->assertFalse(Validator::make(["value" => '12:30'], ['value' => $cast->validation()])->passes());
     }
@@ -102,8 +100,6 @@ class CastTest extends TestCase
         $cast = Cast::DATETIME;
 
         $this->assertTrue(Validator::make(["value" => '2023-03-20 13:45:00'], ['value' => $cast->validation()])->passes());
-
-        // Add tests with other valid datetime formats you might support
 
         $this->assertFalse(Validator::make(["value" => 'hello'], ['value' => $cast->validation()])->passes());
         $this->assertFalse(Validator::make(["value" => '12:30'], ['value' => $cast->validation()])->passes());

@@ -95,7 +95,6 @@ class PreferenceBuilderBulkTest extends TestCase
     /** @test */
     public function init_bulk_creates_new_and_updates_existing_preferences()
     {
-        // Create an initial preference
         PreferenceBuilder::init(General::LANGUAGE)->create();
 
         $preferences = [
@@ -124,7 +123,17 @@ class PreferenceBuilderBulkTest extends TestCase
             ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 10, 'rule' => new LowerThanRule(5)] // Fails rule
         ];
 
-        // Might need to adjust expected behavior based on your implementation
+        $this->expectException(\InvalidArgumentException::class);
+        PreferenceBuilder::initBulk($preferences);
+    }
+    /** @test */
+
+    public function init_bulk_handles_deprecated_group()
+    {
+        $preferences = [
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING,'group'=>"hi"],
+  ];
+
         $this->expectException(\InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }

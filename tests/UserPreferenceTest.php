@@ -25,9 +25,6 @@ class UserPreferenceTest extends TestCase
     /** @test */
     public function test_preferenceable_relationship()
     {
-        // 1. Setup: Create necessary models for the polymorphic relationship
-        // Example if preferenceable() morphs to a User model
-
         $this->testUser->setPreference(General::OPTIONS,['test'=>"works"]);
 
         $userPreference = $this->testUser->getPreferences()->first();

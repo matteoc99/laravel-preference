@@ -43,7 +43,6 @@ class PreferenceBasicTest extends TestCase
     /** @test */
     public function remove_preference()
     {
-        // Set a preference
         $this->testUser->setPreference(General::LANGUAGE, 'it');
 
         $preference = $this->testUser->getPreference(General::LANGUAGE);
@@ -57,14 +56,12 @@ class PreferenceBasicTest extends TestCase
         $this->assertEquals('en', $preference);
     }
 
-    // Add more tests for setting, removing, and getting preferences with different scenarios
 
     /** @test */
     public function preference_validation_rule()
     {
         $this->expectException(ValidationException::class);
 
-        // Try to set an invalid preference
         $this->testUser->setPreference(General::LANGUAGE, 'fr');
     }
 
@@ -73,7 +70,6 @@ class PreferenceBasicTest extends TestCase
     {
         $this->expectException(ValidationException::class);
 
-        // Try to set an invalid preference
         $this->testUser->setPreference(General::LANGUAGE, 2);
     }
 
@@ -86,6 +82,13 @@ class PreferenceBasicTest extends TestCase
         PreferenceBuilder::init(OtherPreferences::QUALITY)
             ->withDescription("video quality")
             ->create();
+        PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
+        PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
+        PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
+        PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
+        PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
+
+        $this->assertDatabaseCount('preferences', 3);
 
         $this->testUser->setPreference(VideoPreferences::QUALITY, "144p");
 

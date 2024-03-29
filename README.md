@@ -8,6 +8,34 @@
 
 This Laravel package aims to store and manage user settings/preferences in a simple and scalable manner.
 
+# Table of Contents
+1. [Heads up](#heads-up)
+2. [Features](#features)
+    - [Roadmap](#roadmap)
+3. [Installation](#installation)
+4. [Usage](#usage)
+    - [Concepts](#concepts)
+    - [Define your preferences](#define-your-preferences)
+    - [Create a Preference](#create-a-preference)
+    - [Working with preferences](#working-with-preferences)
+    - [Examples](#examples)
+5. [Casting](#casting)
+    - [Available Casts](#available-casts)
+    - [Custom Caster](#custom-caster)
+6. [Custom Rules](#custom-rules)
+7. [Deprecation plans](#deprecation-plans)
+8. [Test](#test)
+9. [Security Vulnerabilities](#security-vulnerabilities)
+10. [Credits](#credits)
+11. [License](#license)
+12. [Support target](#support-target)
+
+## Heads up
+Version 2 of this package is in progress, which will change the workflow/Contracts and Signatures substantially
+
+consider checking out the [Deprecation plans](#deprecation-plans) for v1.x for a smoother transition
+
+
 ## Features
 
 - Type safe Casting, 
@@ -16,6 +44,12 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 - extensible (Create your own Validation Rules and casts)
 - Enum support
   - store alle your preferences in one or more enums, to simplify the usage of this package
+
+### Roadmap
+ - routes to get and set preferences via Api -> v2.0
+ - Additional inbuilt Custom Rules -> v2.x
+ - Model / Object Casting -> v2.x
+ - Suggestions are welcome
 
 
 ## Installation
@@ -57,18 +91,17 @@ php artisan migrate
 Organize them in one or more enums.
 
 Each enum gets scoped and does not conflict with other enums with the same case
+> in v2.x you will need to implement `PreferenceGroup`
 
 e.g.
 ```php
-enum Preferences
+enum Preferences :string
 {
-    // can be backed, but its not mandatory
-    case LANGUAGE;
-    case QUALITY;
-    case CONFIG;
+    case LANGUAGE="language";
+    case QUALITY="quality";
+    case CONFIG="configuration";
 }
 ```
-
 
 ### Create a Preference
 #### single mode
@@ -193,12 +226,14 @@ INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP, BACKED_ENUM
 create a `BackedEnum`, and implement `CastableEnum`
 
 ```php
-use Illuminate\Contracts\Validation\Rule;use Matteoc99\LaravelPreference\Contracts\CastableEnum;
+use Illuminate\Contracts\Validation\Rule;
+use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 enum MyCast: string implements CastableEnum
 {
     case TIMEZONE = 'tz';
  
+ // NOTE: return type changes in v.2  from Rule to ValidationRule 
     public function validation(): Rule|array|string
     {
         return match ($this) {
@@ -229,10 +264,10 @@ enum MyCast: string implements CastableEnum
 ## Custom Rules
 
 > rules need to implement `HasValidation`
+> > ValidationRule in v2
 
 > additionally, if your rule requires parameter, extend `DataRule`
->  which than will provide the parameters via `getData()`
-
+> which then will provide the parameters via `getData()`
 
 ```php
 class MyRule extends DataRule
@@ -257,16 +292,18 @@ class MyRule extends DataRule
 ### HasValidation for custom Rules
 `HasValidation` will be deprecated in version >2.x, since Laravel is Deprecating the Rule Contract
 
+use Laravels' `ValidationRule` in v2 and onwards
+
 ### string names
-string `name` for preferences, will be removed in version >2.x, consider using enums, as its the direction this package will take.
+string `name` for preferences, will be removed in version >2.x, consider using backed enums, as it's the direction this package will take.
 
 ### groups
-for preferences is deprecated and creating groups will be removed with version 2.x 
+Manual Groups for preferences is deprecated and creating groups will be removed with version 2.x 
 > the intended use for groups is internal only in combination with enum names
 
 ## Test
 
-`composer test <path>`
+`composer test`
 
 `composer coverage`
 
@@ -288,4 +325,4 @@ The MIT License (MIT). Please check the [License File](LICENSE) for more informa
 | Package Version | Laravel Version |
 |-----------------|-----------------|
 | 1.x             | 10              |
-| 2.x             | 11              |
+| 2.x             | 10 & 11         |

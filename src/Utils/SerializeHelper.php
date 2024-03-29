@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference\Utils;
 
 use BackedEnum;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use RuntimeException;
 
@@ -14,7 +15,7 @@ class SerializeHelper
         if (empty($enum)) return null;
 
         if (!$enum instanceof BackedEnum) {
-            throw new \InvalidArgumentException("Invalid value,Backed enum required for serializing.");
+            throw new InvalidArgumentException("Invalid value,Backed enum required for serializing.");
         }
 
         return json_encode([
@@ -33,11 +34,11 @@ class SerializeHelper
         $enumClass = $value['class'] ?? null;
 
         if (!class_exists($enumClass)) {
-            throw new \InvalidArgumentException("Enum class $enumClass does not exist.");
+            throw new InvalidArgumentException("Enum class $enumClass does not exist.");
         }
 
         if (!in_array(BackedEnum::class, class_implements($enumClass))) {
-            throw new \InvalidArgumentException("Enum class $enumClass must be a backed enum.");
+            throw new InvalidArgumentException("Enum class $enumClass must be a backed enum.");
         }
 
         return $enumClass::tryFrom($value['value']);

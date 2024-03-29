@@ -8,7 +8,7 @@ use Closure;
 class InRule extends DataRule
 {
 
-    public function message()
+    public function message(): string
     {
         return sprintf("One of: %s expected", implode(", ",$this->getData()));
     }

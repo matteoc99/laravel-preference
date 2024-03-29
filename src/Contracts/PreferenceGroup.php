@@ -2,7 +2,9 @@
 
 namespace Matteoc99\LaravelPreference\Contracts;
 
-interface PreferenceGroup extends \BackedEnum
+use BackedEnum;
+
+interface PreferenceGroup extends BackedEnum
 {
 
 }

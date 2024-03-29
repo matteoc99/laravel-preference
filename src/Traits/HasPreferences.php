@@ -10,6 +10,7 @@ use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use RuntimeException;
 
 trait HasPreferences
 {
@@ -28,7 +29,7 @@ trait HasPreferences
      *
      * @return mixed
      */
-    public function getPreference(PreferenceGroup|string $name, mixed $default = null, string $group = null)
+    public function getPreference(PreferenceGroup|string $name, mixed $default = null, string $group = null): mixed
     {
         SerializeHelper::conformNameAndGroup($name, $group);
         $userPreference = $this->userPreferences()->with('preference')
@@ -65,7 +66,7 @@ trait HasPreferences
     public function setPreference(PreferenceGroup|string $name, mixed $value, string $group = null): void
     {
         if(is_string($name) && empty($group)){
-            throw new \RuntimeException('Please use an enum for the Name');
+            throw new RuntimeException('Please use an enum for the Name');
 
         }
 
@@ -75,7 +76,7 @@ trait HasPreferences
         $preference = Preference::where('group', $group)->where('name', $name)->first();
 
         if (!$preference) {
-            throw new \RuntimeException('Preference not found.');
+            throw new RuntimeException('Preference not found.');
         }
 
         $validator = Validator::make(['value' => $value], ['value' => $preference->getValidationRules()]);
@@ -93,7 +94,7 @@ trait HasPreferences
      * Remove a preference for the current user.
      *
      * @param PreferenceGroup|string $name
-     * @param string                 $group
+     * @param string|null            $group
      *
      * @return int
      */

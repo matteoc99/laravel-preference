@@ -13,7 +13,7 @@ class PreferenceServiceProvider extends ServiceProvider
 
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 

@@ -4,6 +4,7 @@ namespace Matteoc99\LaravelPreference\Factory;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
@@ -86,10 +87,10 @@ class PreferenceBuilder
         return $this->preference;
     }
 
-    public static function initBulk(array $preferences)
+    public static function initBulk(array $preferences): void
     {
         if (empty($preferences)) {
-            throw new \InvalidArgumentException("no preferences provided");
+            throw new InvalidArgumentException("no preferences provided");
         }
 
         foreach ($preferences as $key => &$preferenceData) {
@@ -98,25 +99,25 @@ class PreferenceBuilder
             }
 
             if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf("index: #%s name is required and needs to be a PreferenceGroup", $key)
                 );
             }
 
             if (empty($preferenceData['cast']) || !($preferenceData['cast'] instanceof CastableEnum)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $key)
                 );
             }
 
             if (!empty($preferenceData['default_value']) && !empty($preferenceData['rule']) && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf("index: #%s default_value fails the validation rule", $key)
                 );
             }
 
             if (array_key_exists('group', $preferenceData)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf("index: #%s group has been deprecated", $key)
                 );
             }
@@ -150,13 +151,13 @@ class PreferenceBuilder
     public static function deleteBulk(array $preferences): int
     {
         if (empty($preferences)) {
-            throw new \InvalidArgumentException("no preferences provided");
+            throw new InvalidArgumentException("no preferences provided");
         }
         $query = Preference::query();
 
         foreach ($preferences as $key => $preferenceData) {
             if (empty($preferenceData['name'])) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     sprintf("index: #%s name is required", $key)
                 );
             }

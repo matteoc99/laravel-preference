@@ -2,8 +2,9 @@
 
 namespace Matteoc99\LaravelPreference\Enums;
 
+use BackedEnum;
 use Carbon\Carbon;
-use Illuminate\Contracts\Validation\Rule;
+use Exception;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
@@ -24,6 +25,7 @@ enum Cast: string implements CastableEnum
     case TIMESTAMP = 'timestamp';
 
     case BACKED_ENUM = 'backed_enum';
+
     public function validation(): ValidationRule|array|string
     {
         return match ($this) {
@@ -35,7 +37,7 @@ enum Cast: string implements CastableEnum
             self::DATE, self::DATETIME => 'date',
             self::TIME => 'date_format:H:i',
             self::TIMESTAMP => 'date_format:U',
-            self::BACKED_ENUM => new InstanceOfRule(\BackedEnum::class),
+            self::BACKED_ENUM => new InstanceOfRule(BackedEnum::class),
         };
     }
 
@@ -54,6 +56,9 @@ enum Cast: string implements CastableEnum
         };
     }
 
+    /**
+     * @throws ValidationException
+     */
     public function castToString(mixed $value): string
     {
         $value = $this->ensureType($value);
@@ -69,51 +74,57 @@ enum Cast: string implements CastableEnum
         };
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function ensureType(mixed $value): mixed
     {
+        return match ($this) {
+            self::INT => intval($value),
+            self::FLOAT => floatval($value),
+            self::STRING => (string)$value,
+            self::BOOL => !empty($value),
+            self::ARRAY => $this->ensureArray($value),
+            self::TIMESTAMP, self::DATETIME, self::DATE => $this->ensureCarbon($value),
+            self::TIME => $this->ensureCarbon($value, 'setTimeFromTimeString'),
+            self::BACKED_ENUM => $this->ensureBackedEnum($value),
+            default => throw ValidationException::withMessages(["Unknown casting type"]),
+        };
+    }
 
-        switch ($this) {
-            case self::INT:
-                $value = intval($value);
-                break;
-            case self::FLOAT:
-                $value = floatval($value);
-                break;
-            case self::STRING:
-                $value = (string)$value;
-                break;
-            case self::BOOL:
-                return !empty($value);
-            case self::ARRAY:
-                if (!is_array($value)) {
-                    $value = json_decode($value, true);
-                }
-                break;
-            case self::TIMESTAMP:
-                if (!($value instanceof Carbon)) {
-                    $value = Carbon::createFromTimestamp($value);
-                }
-            case self::DATETIME:
-            case self::DATE:
-                if (!($value instanceof Carbon)) {
-                    try {
-                        $value = Carbon::parse($value);  // Attempt to parse various date/time formats
-                    } catch (\Exception $e) {
-                        throw ValidationException::withMessages(["Invalid format for cast to DATETIME, DATE, or TIME"]);
-                    }
-                }
-            case self::TIME:
-                if (!($value instanceof Carbon)) {
-                    $value = Carbon::now()->setTimeFromTimeString($value);
-                }
-                break;
-            case self::BACKED_ENUM:
-                if (!($value instanceof \BackedEnum)) {
-                    throw ValidationException::withMessages(["Wrong type for Backed enum casting"]);
-                }
-                break;
-            default:
-                throw ValidationException::withMessages(["Unknown casting type"]);
+
+    private function ensureArray(mixed $value): array
+    {
+        if (!is_array($value)) {
+            $value = json_decode($value, true);
+        }
+        return $value;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function ensureCarbon(mixed $value, string $method = 'parse'): Carbon
+    {
+        if (!($value instanceof Carbon)) {
+            try {
+                $value = Carbon::$method($value);
+            } catch (Exception $_) {
+                throw ValidationException::withMessages([
+                    "Invalid format for cast to " . $this->name
+                ]);
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function ensureBackedEnum(mixed $value): BackedEnum
+    {
+        if (!($value instanceof BackedEnum)) {
+            throw ValidationException::withMessages(["Wrong type for Backed enum casting"]);
         }
         return $value;
     }

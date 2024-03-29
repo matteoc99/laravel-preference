@@ -2,9 +2,10 @@
 
 namespace Matteoc99\LaravelPreference\Contracts;
 
+use BackedEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-interface CastableEnum extends \BackedEnum
+interface CastableEnum extends BackedEnum
 {
 
     public function validation(): ValidationRule|array|string;

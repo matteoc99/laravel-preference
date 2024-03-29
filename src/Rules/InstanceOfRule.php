@@ -8,7 +8,7 @@ use Closure;
 class InstanceOfRule extends DataRule
 {
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if (!is_string($value)) $value = $value::class;
         if (!class_exists($value)) return false;
@@ -22,7 +22,7 @@ class InstanceOfRule extends DataRule
         return !empty($this->getData());
     }
 
-    public function message()
+    public function message(): string
     {
         return sprintf("One of: %s must be implemented", implode(", ", $this->getData()));
     }

@@ -6,16 +6,17 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Rules\DataRule;
 
 class RuleCaster implements CastsAttributes
 {
-    public function get(?Model $model, string $key, mixed $value, array $attributes)
+    public function get(?Model $model, string $key, mixed $value, array $attributes): DataRule|ValidationRule|null
     {
         return $this->deserializerRule($value);
     }
 
-    protected function deserializerRule($value)
+    protected function deserializerRule($value): DataRule|ValidationRule|null
     {
         if (empty($value)) {
             return null;
@@ -25,7 +26,7 @@ class RuleCaster implements CastsAttributes
         $class = $value['class'];
 
         if (!class_exists($class)) {
-            throw new \InvalidArgumentException("Enum class $class does not exist.");
+            throw new InvalidArgumentException("Enum class $class does not exist.");
         }
 
         /**@var ValidationRule $rule * */
@@ -46,7 +47,7 @@ class RuleCaster implements CastsAttributes
     protected function serializeRule($rule): array
     {
         if (!$rule instanceof ValidationRule) {
-            throw new \InvalidArgumentException("Invalid value for ValidationRule attribute.");
+            throw new InvalidArgumentException("Invalid value for ValidationRule attribute.");
         }
 
         $resp = [

@@ -18,7 +18,7 @@ class BaseModel extends Model
         parent::__construct($attributes);
     }
 
-    public function toArrayOnly(array $keys)
+    public function toArrayOnly(array $keys): array
     {
         return Arr::only($this->attributesToArray(), $keys);
     }

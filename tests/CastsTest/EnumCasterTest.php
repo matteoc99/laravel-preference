@@ -1,6 +1,6 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Casts;
+namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
 use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;

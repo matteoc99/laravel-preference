@@ -1,9 +1,10 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests;
+namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
 use Illuminate\Support\Facades\Validator;
 use Matteoc99\LaravelPreference\Enums\Cast;
+use Matteoc99\LaravelPreference\Tests\TestCase;
 
 class CastTest extends TestCase
 {

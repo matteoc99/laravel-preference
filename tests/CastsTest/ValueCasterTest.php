@@ -1,10 +1,10 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Casts;
+namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;
-use Matteoc99\LaravelPreference\Tests\Enums\VideoPreferences;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
 
 class ValueCasterTest extends CasterTestCase

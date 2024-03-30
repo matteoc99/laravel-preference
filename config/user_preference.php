@@ -16,7 +16,7 @@ return [
             //'general'=>General::class
         ],
         'scopes'=> [
-           // as many preferencable models as you want
+           // as many preferenceable models as you want
             'user' => \Illuminate\Auth\Authenticatable::class
         ]
     ]

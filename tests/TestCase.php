@@ -5,7 +5,7 @@ namespace Matteoc99\LaravelPreference\Tests;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Matteoc99\LaravelPreference\PreferenceServiceProvider;
-use Matteoc99\LaravelPreference\Tests\Models\User;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {

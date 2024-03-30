@@ -1,9 +1,9 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Casts;
+namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
-use Matteoc99\LaravelPreference\Tests\Models\LowerThanRule;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 
 class RuleCasterTest extends CasterTestCase
 {

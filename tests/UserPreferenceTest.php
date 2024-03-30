@@ -5,7 +5,7 @@ namespace Matteoc99\LaravelPreference\Tests;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
-use Matteoc99\LaravelPreference\Tests\Enums\General;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 
 class UserPreferenceTest extends TestCase
 {

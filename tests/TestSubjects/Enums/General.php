@@ -1,6 +1,6 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Enums;
+namespace Matteoc99\LaravelPreference\Tests\TestSubjects\Enums;
 
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 

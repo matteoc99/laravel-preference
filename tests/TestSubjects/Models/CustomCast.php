@@ -1,8 +1,7 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Models;
+namespace Matteoc99\LaravelPreference\Tests\TestSubjects\Models;
 
-use Illuminate\Contracts\Validation\Rule;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 enum CustomCast: string implements CastableEnum

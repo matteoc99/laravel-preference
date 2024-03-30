@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference;
 
 use Illuminate\Support\ServiceProvider;
+use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 class PreferenceServiceProvider extends ServiceProvider
 {
@@ -21,7 +22,7 @@ class PreferenceServiceProvider extends ServiceProvider
             __DIR__ . '/../config/user_preference.php' => config_path('user_preference.php'),
         ], 'laravel-preference-config');
 
-        if (config('user_preference.routes.enabled', false)) {
+        if (ConfigHelper::areRoutesEnabled()) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
         }
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests\Models;
+namespace Matteoc99\LaravelPreference\Tests\TestSubjects\Models;
 
 use Closure;
 use Matteoc99\LaravelPreference\Rules\DataRule;

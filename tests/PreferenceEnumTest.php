@@ -4,9 +4,9 @@ namespace Matteoc99\LaravelPreference\Tests;
 
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
-use Matteoc99\LaravelPreference\Tests\Enums\OtherPreferences;
-use Matteoc99\LaravelPreference\Tests\Enums\General;
-use Matteoc99\LaravelPreference\Tests\Enums\VideoPreferences;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
 class PreferenceEnumTest extends TestCase
 {

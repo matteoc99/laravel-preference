@@ -12,4 +12,14 @@ class IndexTest extends ApiTestCase
 
         $response->assertStatus(200);
     }
+
+    /** @test */
+
+    public function test_index_invalid_scope()
+    {
+        $response = $this->get(route('preferences.user.general.index', ['scope_id' => 2]));
+
+        $response->assertNotFound();
+    }
+
 }

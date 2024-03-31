@@ -7,10 +7,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
-use RuntimeException;
+
 
 trait HasPreferences
 {
@@ -23,19 +24,20 @@ trait HasPreferences
     /**
      * Retrieve a preference value, prioritizing user settings, then defaults.
      *
-     * @param PreferenceGroup|string $name
-     * @param string|null            $group
-     * @param mixed|null             $default
+     * @param PreferenceGroup $name
+     * @param mixed|null      $default
      *
      * @return mixed
+     * @throws PreferenceNotFoundException
      */
-    public function getPreference(PreferenceGroup|string $name, mixed $default = null, string $group = null): mixed
+    public function getPreference(PreferenceGroup $name, mixed $default = null): mixed
     {
         SerializeHelper::conformNameAndGroup($name, $group);
-        $userPreference = $this->userPreferences()->with('preference')
-            ->whereHas('preference', function ($query) use ($group, $name) {
-                $query->where('group', $group)->where('name', $name);
-            })
+        /**@var string $name * */
+        $preference = $this->validateAndRetrievePreference($name, $group);
+
+        $userPreference = $this->userPreferences()
+            ->where('preference_id', $preference->id)
             ->first();
 
         return $userPreference?->value ?? $this->getDefaultPreferenceValue($name, $group) ?? $default;
@@ -57,27 +59,18 @@ trait HasPreferences
     /**
      * Set a preference value, handling validation and persistence.
      *
-     * @param PreferenceGroup|string $name
-     * @param mixed                  $value
-     * @param string|null            $group
+     * @param PreferenceGroup $name
+     * @param mixed           $value
      *
      * @throws ValidationException
+     * @throws PreferenceNotFoundException
      */
-    public function setPreference(PreferenceGroup|string $name, mixed $value, string $group = null): void
+    public function setPreference(PreferenceGroup $name, mixed $value): void
     {
-        if(is_string($name) && empty($group)){
-            throw new RuntimeException('Please use an enum for the Name');
-
-        }
 
         SerializeHelper::conformNameAndGroup($name, $group);
-
-        /**@var Preference $preference * */
-        $preference = Preference::where('group', $group)->where('name', $name)->first();
-
-        if (!$preference) {
-            throw new RuntimeException('Preference not found.');
-        }
+        /**@var string $name * */
+        $preference = $this->validateAndRetrievePreference($name, $group);
 
         $validator = Validator::make(['value' => $value], ['value' => $preference->getValidationRules()]);
 
@@ -93,18 +86,18 @@ trait HasPreferences
     /**
      * Remove a preference for the current user.
      *
-     * @param PreferenceGroup|string $name
-     * @param string|null            $group
+     * @param PreferenceGroup $name
      *
      * @return int
+     * @throws PreferenceNotFoundException
      */
-    public function removePreference(PreferenceGroup|string $name, string $group = null): int
+    public function removePreference(PreferenceGroup $name): int
     {
         SerializeHelper::conformNameAndGroup($name, $group);
+        /**@var string $name * */
+        $preference = $this->validateAndRetrievePreference($name, $group);
 
-        return $this->userPreferences()->whereHas('preference', function ($query) use ($group, $name) {
-            $query->where('group', $group)->where('name', $name);
-        })->delete();
+        return $this->userPreferences()->where('preference_id', $preference->id)->delete();
     }
 
     /**
@@ -125,5 +118,16 @@ trait HasPreferences
         }
 
         return $query->get();
+    }
+
+    private function validateAndRetrievePreference(string $name, string $group): Preference
+    {
+        /**@var Preference $preference * */
+        $preference = Preference::where('group', $group)->where('name', $name)->first();
+
+        if (!$preference) {
+            throw new PreferenceNotFoundException("Preference not found: $name $group ");
+        }
+        return $preference;
     }
 }

@@ -48,18 +48,28 @@ class Preference extends BaseModel
 
     public function getValidationRules(): array
     {
-        $rule = $this->cast?->validation();
-        if (empty($rule)) return [$this?->rule];
-
-        if (!is_array($rule)) {
-            if ($rule instanceof ValidationRule) {
-                $rule = [$rule];
-            } else {
-                $rule = explode('|', $rule);
+        $rules = [];
+        if ($this->cast) {
+            $castValidation = $this->cast->validation();
+            if ($castValidation) {
+                $rules = array_merge($rules, $this->processRule($castValidation));
             }
         }
+        if ($this->rule) {
+            $rules = array_merge($rules, $this->processRule($this->rule));
+        }
 
-        return array_merge($rule, [$this?->rule]);
+        return $rules;
+    }
+    private function processRule($rule): array
+    {
+        if (is_array($rule)) {
+            return $rule;
+        } elseif ($rule instanceof ValidationRule) {
+            return [$rule];
+        } else {
+            return explode('|', $rule);
+        }
     }
 
 }

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 interface CastableEnum extends BackedEnum
 {
 
-    public function validation(): ValidationRule|array|string;
+    public function validation(): ValidationRule|array|string|null;
 
 
     public function castToString(mixed $value): string;

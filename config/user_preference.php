@@ -8,7 +8,8 @@ return [
         'enabled'     => false,
         'middlewares' => [
             'auth', // general middleware
-            'user'=> 'verified' // optional, scoped middleware
+            'user'=> 'verified', // optional, scoped middleware
+            'user.general'=> 'verified' // optional, scoped & grouped middleware
         ],
         'prefix' => 'preferences',
         'groups'      => [

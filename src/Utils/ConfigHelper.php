@@ -66,4 +66,12 @@ class ConfigHelper
         }, ARRAY_FILTER_USE_KEY)) ?? [];
     }
 
+    public static function getScopeGroupedMiddlewares($scopeName, $groupName): array
+    {
+        $name = $scopeName . '.' . $groupName;
+        return array_values(array_filter(self::getAllMiddlewares(), function ($key) use ($name) {
+            return $key == $name;
+        }, ARRAY_FILTER_USE_KEY)) ?? [];
+    }
+
 }

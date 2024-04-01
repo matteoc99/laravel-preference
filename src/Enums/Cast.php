@@ -26,7 +26,7 @@ enum Cast: string implements CastableEnum
 
     case BACKED_ENUM = 'backed_enum';
 
-    public function validation(): ValidationRule|array|string
+    public function validation(): ValidationRule|array|string|null
     {
         return match ($this) {
             self::INT => 'integer',

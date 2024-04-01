@@ -55,7 +55,7 @@ class PreferenceController extends Controller
         );
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function delete(Request $request): JsonResponse
     {
         $this->scope->removePreference($this->group);
 

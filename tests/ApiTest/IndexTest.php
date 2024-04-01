@@ -17,7 +17,7 @@ class IndexTest extends ApiTestCase
 
     public function test_index_invalid_scope()
     {
-        $response = $this->get(route('preferences.user.general.index', ['scope_id' => 2]));
+        $response = $this->get(route('preferences.user.general.index', ['scope_id' => 200]));
 
         $response->assertNotFound();
     }

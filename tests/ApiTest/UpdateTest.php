@@ -41,7 +41,7 @@ class UpdateTest extends ApiTestCase
 
     public function test_update_invalid_scope()
     {
-        $response = $this->patch(route('preferences.user.general.update', ['scope_id' => 2, 'preference' => 'language']));
+        $response = $this->patch(route('preferences.user.general.update', ['scope_id' => 200, 'preference' => 'language']));
 
         $response->assertNotFound();
     }

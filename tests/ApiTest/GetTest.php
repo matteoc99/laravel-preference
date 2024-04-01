@@ -17,9 +17,17 @@ class GetTest extends ApiTestCase
 
     public function test_get_invalid_scope()
     {
-        $response = $this->get(route('preferences.user.general.get', ['scope_id' => 2, 'preference' => 'language']));
+        $response = $this->get(route('preferences.user.general.get', ['scope_id' => 200, 'preference' => 'language']));
 
         $response->assertNotFound();
+    }
+    /** @test */
+
+    public function test_get_invalid_permission()
+    {
+        $response = $this->get(route('preferences.user.general.get', ['scope_id' => 2, 'preference' => 'language']));
+
+        $response->assertForbidden();
     }
 
     /** @test */

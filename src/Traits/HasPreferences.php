@@ -2,11 +2,14 @@
 
 namespace Matteoc99\LaravelPreference\Traits;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+use Matteoc99\LaravelPreference\Enums\PolicyAction;
 use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
@@ -32,6 +35,7 @@ trait HasPreferences
      */
     public function getPreference(PreferenceGroup $name, mixed $default = null): mixed
     {
+        $this->authorize(PolicyAction::GET);
         SerializeHelper::conformNameAndGroup($name, $group);
         /**@var string $name * */
         $preference = $this->validateAndRetrievePreference($name, $group);
@@ -41,19 +45,6 @@ trait HasPreferences
             ->first();
 
         return $userPreference?->value ?? $this->getDefaultPreferenceValue($name, $group) ?? $default;
-    }
-
-    /**
-     * Retrieve the default value for a preference from its configuration.
-     *
-     * @param string $name
-     * @param string $group
-     *
-     * @return mixed
-     */
-    private function getDefaultPreferenceValue(string $name, string $group): mixed
-    {
-        return Preference::where('group', $group)->where('name', $name)->first()?->default_value ?? null;
     }
 
     /**
@@ -67,6 +58,7 @@ trait HasPreferences
      */
     public function setPreference(PreferenceGroup $name, mixed $value): void
     {
+        $this->authorize(PolicyAction::UPDATE);
 
         SerializeHelper::conformNameAndGroup($name, $group);
         /**@var string $name * */
@@ -93,6 +85,8 @@ trait HasPreferences
      */
     public function removePreference(PreferenceGroup $name): int
     {
+        $this->authorize(PolicyAction::DELETE);
+
         SerializeHelper::conformNameAndGroup($name, $group);
         /**@var string $name * */
         $preference = $this->validateAndRetrievePreference($name, $group);
@@ -109,6 +103,8 @@ trait HasPreferences
      */
     public function getPreferences(string $group = null): Collection
     {
+        $this->authorize(PolicyAction::INDEX);
+
         $query = $this->userPreferences()->with('preference');
 
         if ($group) {
@@ -129,5 +125,18 @@ trait HasPreferences
             throw new PreferenceNotFoundException("Preference not found: $name $group ");
         }
         return $preference;
+    }
+
+
+    private function getDefaultPreferenceValue(string $name, string $group): mixed
+    {
+        return Preference::where('group', $group)->where('name', $name)->first()?->default_value ?? null;
+    }
+
+    private function authorize(PolicyAction $action): void
+    {
+        if (!$this->isUserAuthorized(Auth::user(), $action)) {
+            throw new AuthorizationException("the user is not authorized to perform the action: " . $action->name);
+        }
     }
 }

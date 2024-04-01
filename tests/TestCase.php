@@ -4,6 +4,7 @@ namespace Matteoc99\LaravelPreference\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Matteoc99\LaravelPreference\PreferenceServiceProvider;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
@@ -12,6 +13,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     use RefreshDatabase;
 
     protected User $testUser;
+    protected User $otherUser;
 
     public function setUp(): void
     {
@@ -23,11 +25,17 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->setUpDatabase($this->app);
 
 
+        $this->otherUser = new User([
+            'email' => 'other@test.com'
+        ]);
+
         $this->testUser = new User([
             'email' => 'test@test.com'
         ]);
         $this->testUser->save();
-        $this->testUser = $this->testUser->fresh();
+        $this->otherUser->save();
+
+        Auth::login($this->testUser);
     }
 
     /**
@@ -53,10 +61,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-            'prefix'   => '',
-            'foreign_key_constraints'   => true,
+            'driver'                  => 'sqlite',
+            'database'                => ':memory:',
+            'prefix'                  => '',
+            'foreign_key_constraints' => true,
         ]);
     }
 

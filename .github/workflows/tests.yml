@@ -40,8 +40,3 @@ jobs:
           composer update
       - name: Execute tests
         run: vendor/bin/phpunit ./tests
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: matteoc99/laravel-preference

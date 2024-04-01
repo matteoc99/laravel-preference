@@ -24,8 +24,8 @@ Route::group(['middleware' => $middlewares, 'prefix' => $prefix], function () us
                     ->name($name . ".get");
                 Route::match(['PUT', 'PATCH'], "{scope_id}/$group/{preference}", [PreferenceController::class, 'update'])
                     ->name($name . ".update");
-                Route::delete("{scope_id}/$group/{preference}", [PreferenceController::class, 'destroy'])
-                    ->name($name . ".destroy");
+                Route::delete("{scope_id}/$group/{preference}", [PreferenceController::class, 'delete'])
+                    ->name($name . ".delete");
             }
         });
     }

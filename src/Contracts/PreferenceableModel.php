@@ -2,8 +2,10 @@
 
 namespace Matteoc99\LaravelPreference\Contracts;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
+use Matteoc99\LaravelPreference\Enums\PolicyAction;
 use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 
 interface PreferenceableModel
@@ -48,5 +50,16 @@ interface PreferenceableModel
      * @throws PreferenceNotFoundException
      */
     public function getPreference(PreferenceGroup $name, mixed $default = null): mixed;
+
+
+    /**
+     * check if the user is authorized
+     *
+     * @param Authenticatable|null $user
+     * @param PolicyAction         $action
+     *
+     * @return bool
+     */
+    public function isUserAuthorized(?Authenticatable $user, PolicyAction $action): bool;
 
 }

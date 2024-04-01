@@ -16,16 +16,12 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 class ApiTestCase extends TestCase
 {
 
-    protected Preference $dummyPref;
-
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->dummyPref = PreferenceBuilder::init(General::LANGUAGE)->withRule(new InRule('it', 'en', 'de'))->create();
-        PreferenceBuilder::init(VideoPreferences::QUALITY, Cast::INT)->withDefaultValue(2)->withRule(new LowerThanRule(5))->create();
+        PreferenceBuilder::init(General::LANGUAGE)->withRule(new InRule('it', 'en', 'de'))->create();
     }
-
     /**
      * Define environment setup.
      *

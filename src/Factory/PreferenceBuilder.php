@@ -5,7 +5,6 @@ namespace Matteoc99\LaravelPreference\Factory;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
 use InvalidArgumentException;
-use Matteoc99\LaravelPreference\Casts\EnumCaster;
 use Matteoc99\LaravelPreference\Casts\RuleCaster;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
@@ -125,16 +124,15 @@ class PreferenceBuilder
             SerializeHelper::conformNameAndGroup($preferenceData['name'], $preferenceData['group']);
 
             if (array_key_exists('rule', $preferenceData)) {
-                $ruleCaster             = new RuleCaster();
-                $preferenceData['rule'] = $ruleCaster->set(null, '', $preferenceData['rule'], []);
+                $preferenceData['rule'] = serialize($preferenceData['rule']);
             }
             if (array_key_exists('default_value', $preferenceData)) {
                 $valueCaster                     = new ValueCaster($preferenceData['cast']);
                 $preferenceData['default_value'] = $valueCaster->set(null, '', $preferenceData['default_value'], []);
             }
 
-            $enumCaster             = new EnumCaster();
-            $preferenceData['cast'] = $enumCaster->set(null, '', $preferenceData['cast'], []);
+
+            $preferenceData['cast'] = serialize($preferenceData['cast']);
 
             // Ensure Defaults
             $preferenceData = array_merge([

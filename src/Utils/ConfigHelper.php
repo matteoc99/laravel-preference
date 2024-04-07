@@ -3,7 +3,6 @@
 namespace Matteoc99\LaravelPreference\Utils;
 
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 
 class ConfigHelper
 {
@@ -18,15 +17,11 @@ class ConfigHelper
         return Config::get('user_preference.routes.enabled', false);
     }
 
-    public static function getRoutePrefix(): string
+    public static function getRoutePrefix(bool $dotted = true): string
     {
         $prefix = Config::get('user_preference.routes.name_prefix', 'preferences');
 
-        if (!Str::endsWith($prefix, '.')) {
-            $prefix .= '.';
-        }
-
-        return $prefix;
+        return rtrim($prefix, '.') . ($dotted ? '.' : '');
     }
 
     public static function getGroup(string $groupName): string|null

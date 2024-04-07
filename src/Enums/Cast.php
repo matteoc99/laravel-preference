@@ -9,7 +9,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
-use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use Matteoc99\LaravelPreference\Rules\IsRule;
+use UnitEnum;
 
 
 enum Cast: string implements CastableEnum
@@ -25,6 +26,8 @@ enum Cast: string implements CastableEnum
     case TIMESTAMP = 'timestamp';
 
     case BACKED_ENUM = 'backed_enum';
+    case ENUM = 'enum';
+    case OBJECT = 'object';
 
     public function validation(): ValidationRule|array|string|null
     {
@@ -38,6 +41,8 @@ enum Cast: string implements CastableEnum
             self::TIME => 'date_format:H:i',
             self::TIMESTAMP => 'date_format:U',
             self::BACKED_ENUM => new InstanceOfRule(BackedEnum::class),
+            self::ENUM => new InstanceOfRule(UnitEnum::class),
+            self::OBJECT => new IsRule(Type::OBJECT),
         };
     }
 
@@ -52,7 +57,7 @@ enum Cast: string implements CastableEnum
             self::DATE, self::DATETIME => new Carbon($value),
             self::TIME => Carbon::now()->setTimeFromTimeString($value),
             self::TIMESTAMP => Carbon::createFromTimestamp($value),
-            self::BACKED_ENUM => SerializeHelper::deserializeEnum($value),
+            self::BACKED_ENUM, self::ENUM, self::OBJECT => unserialize($value),
         };
     }
 
@@ -70,7 +75,7 @@ enum Cast: string implements CastableEnum
             self::DATETIME => $value->toDateTimeString(),
             self::TIMESTAMP => $value->timestamp,
             self::TIME => $value->toTimeString(),
-            self::BACKED_ENUM => SerializeHelper::serializeEnum($value),
+            self::BACKED_ENUM, self::ENUM, self::OBJECT => serialize($value),
         };
     }
 
@@ -88,6 +93,8 @@ enum Cast: string implements CastableEnum
             self::TIMESTAMP, self::DATETIME, self::DATE => $this->ensureCarbon($value),
             self::TIME => $this->ensureCarbon($value, 'setTimeFromTimeString'),
             self::BACKED_ENUM => $this->ensureBackedEnum($value),
+            self::ENUM => $this->ensureEnum($value),
+            self::OBJECT => $this->ensureObject($value),
             default => throw ValidationException::withMessages(["Unknown casting type"]),
         };
     }
@@ -125,6 +132,25 @@ enum Cast: string implements CastableEnum
     {
         if (!($value instanceof BackedEnum)) {
             throw ValidationException::withMessages(["Wrong type for Backed enum casting"]);
+        }
+        return $value;
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function ensureEnum(mixed $value): UnitEnum
+    {
+        if (!($value instanceof UnitEnum)) {
+            throw ValidationException::withMessages(["Wrong type for enum casting"]);
+        }
+        return $value;
+    }
+
+    private function ensureObject(mixed $value)
+    {
+        if (!is_object($value)) {
+            throw ValidationException::withMessages(["Wrong type for object casting"]);
         }
         return $value;
     }

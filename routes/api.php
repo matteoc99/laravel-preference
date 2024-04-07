@@ -6,18 +6,17 @@ use Matteoc99\LaravelPreference\Http\Middlewares\PreferenceMiddleware;
 use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 
-$prefix = ConfigHelper::getRoutePrefix();
 $scopes = ConfigHelper::getScopes();
 $groups = ConfigHelper::getGroups();
 
 $middlewares = array_merge([PreferenceMiddleware::class], ConfigHelper::getGlobalMiddlewares());
 
-Route::group(['middleware' => $middlewares, 'prefix' => $prefix], function () use ($groups, $scopes, $prefix) {
+Route::group(['middleware' => $middlewares, 'prefix' => ConfigHelper::getRoutePrefix(false)], function () use ($groups, $scopes) {
 
     foreach ($scopes as $scope) {
-        Route::group(['middleware' => ConfigHelper::getScopedMiddlewares($scope), 'prefix' => $scope], function () use ($scope, $prefix, $groups) {
+        Route::group(['middleware' => ConfigHelper::getScopedMiddlewares($scope), 'prefix' => $scope], function () use ($scope, $groups) {
             foreach ($groups as $group) {
-                $name = sprintf("%s%s.%s", $prefix, $scope, $group);
+                $name = sprintf("%s%s.%s", ConfigHelper::getRoutePrefix(), $scope, $group);
                 Route::group(['middleware' => ConfigHelper::getScopeGroupedMiddlewares($scope, $group)], function () use ($name, $group) {
                     Route::get("{scope_id}/$group", [PreferenceController::class, 'index'])
                         ->name($name . ".index");

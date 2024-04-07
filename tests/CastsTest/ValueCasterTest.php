@@ -4,8 +4,8 @@ namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;
+use Matteoc99\LaravelPreference\Enums\Type;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
-use Matteoc99\LaravelPreference\Utils\SerializeHelper;
 
 class ValueCasterTest extends CasterTestCase
 {
@@ -14,27 +14,6 @@ class ValueCasterTest extends CasterTestCase
     public function test_get()
     {
         $caster = new ValueCaster();
-
-        $this->dummyPref->cast = Cast::BOOL;
-        $result                = $caster->get($this->dummyPref, '', false, []);
-        $this->assertFalse($result);
-
-        $this->dummyPref->cast = Cast::INT;
-        $result                = $caster->get($this->dummyPref, '', '123', []);
-        $this->assertEquals(123, $result);
-
-        $this->dummyPref->cast = Cast::FLOAT;
-        $result                = $caster->get($this->dummyPref, '', '3.14', []);
-        $this->assertEquals(3.14, $result);
-
-        $this->dummyPref->cast = Cast::STRING;
-        $result                = $caster->get($this->dummyPref, '', 'hello', []);
-        $this->assertEquals('hello', $result); // Assert no change
-
-
-        $this->dummyPref->cast = Cast::ARRAY;
-        $result                = $caster->get($this->dummyPref, '', "[1, \"hello\"]", []);
-        $this->assertIsArray($result);
 
         $this->dummyPref->cast = Cast::DATE;
         $result                = $caster->get($this->dummyPref, '', '2023-12-25', []);
@@ -58,10 +37,19 @@ class ValueCasterTest extends CasterTestCase
         $this->assertEquals($timestamp, $result->getTimestamp());
 
         $this->dummyPref->cast = Cast::BACKED_ENUM;
-        $result                = $caster->get($this->dummyPref, '', SerializeHelper::serializeEnum(VideoPreferences::LANGUAGE), []);
+        $result                = $caster->get($this->dummyPref, '', serialize(VideoPreferences::LANGUAGE), []);
         $this->assertEquals(VideoPreferences::LANGUAGE, $result);
         $this->assertEquals(VideoPreferences::LANGUAGE->name, $result->name);
 
+        $this->dummyPref->cast = Cast::ENUM;
+        $result                = $caster->get($this->dummyPref, '', serialize(Type::INT), []);
+        $this->assertEquals(Type::INT, $result);
+        $this->assertEquals(Type::INT->name, $result->name);
+
+        $this->dummyPref->cast = Cast::OBJECT;
+        $result                = $caster->get($this->dummyPref, '', serialize($this->testUser), []);
+        $this->assertEquals($this->testUser, $result);
+        $this->assertEquals($this->testUser->email, $result->email);
 
         $this->dummyPref->cast = null;
         $val                   = 12345;
@@ -74,14 +62,6 @@ class ValueCasterTest extends CasterTestCase
     public function test_set()
     {
         $caster = new ValueCaster();
-
-        $this->dummyPref->cast = Cast::BOOL;
-        $result                = $caster->set($this->dummyPref, '', true, []);
-        $this->assertEquals(true, $result);
-
-        $this->dummyPref->cast = Cast::ARRAY;
-        $result                = $caster->set($this->dummyPref, '', [1, "hello"], []);
-        $this->assertJson($result);
 
         $this->dummyPref->cast = Cast::DATE;
         $date                  = \Carbon\Carbon::now();
@@ -105,8 +85,20 @@ class ValueCasterTest extends CasterTestCase
 
         $this->dummyPref->cast = Cast::BACKED_ENUM;
         $result                = $caster->set($this->dummyPref, '', VideoPreferences::LANGUAGE, []);
-        $this->assertEquals(SerializeHelper::serializeEnum(VideoPreferences::LANGUAGE), $result);
-        $this->assertEquals(VideoPreferences::LANGUAGE, SerializeHelper::deserializeEnum($result));
+        $this->assertEquals(serialize(VideoPreferences::LANGUAGE), $result);
+        $this->assertEquals(VideoPreferences::LANGUAGE, unserialize($result));
+
+        $this->dummyPref->cast = Cast::ENUM;
+        $result                = $caster->set($this->dummyPref, '', Type::STRING, []);
+        $this->assertEquals(serialize(Type::STRING), $result);
+        $this->assertEquals(Type::STRING, unserialize($result));
+
+
+        $this->dummyPref->cast = Cast::OBJECT;
+        $result                = $caster->set($this->dummyPref, '', $this->testUser, []);
+        $this->assertEquals(serialize($this->testUser), $result);
+        $this->assertEquals($this->testUser, unserialize($result));
+
 
         $this->dummyPref->cast = null;
         $val                   = 12345;
@@ -114,4 +106,53 @@ class ValueCasterTest extends CasterTestCase
         $this->assertEquals($val, $result);
     }
 
+    public static function castProvider(): array
+    {
+        return [
+            'Bool False' => [
+                Cast::BOOL, false, false, 'assertFalse'
+            ],
+            'Int'        => [
+                Cast::INT, '123', 123, 'assertEquals'
+            ],
+            'Float'      => [
+                Cast::FLOAT, '3.14', 3.14, 'assertEquals'
+            ],
+            'String'     => [
+                Cast::STRING, 'hello', 'hello', 'assertEquals'
+            ],
+            'Array'      => [
+                Cast::ARRAY, json_encode([1, "hello"]), [1, "hello"], 'assertEquals'
+            ],
+            'Null'       => [
+                null, '12345', '12345', 'assertEquals'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider castProvider
+     */
+    public function test_get_with_cast_basic($cast, $value, $expectedResult, $assertionMethod)
+    {
+        $caster = new ValueCaster();
+
+        $this->dummyPref->cast = $cast;
+        $result                = $caster->get($this->dummyPref, '', $value, []);
+
+        $this->$assertionMethod($expectedResult, $result);
+    }
+
+    /**
+     * @dataProvider castProvider
+     */
+    public function test_set_with_cast_basic($cast, $expectedValue, $originalValue, $assertionMethod)
+    {
+        $caster = new ValueCaster();
+
+        $this->dummyPref->cast = $cast;
+        $result                = $caster->set($this->dummyPref, '', $originalValue, []);
+
+        $this->$assertionMethod($expectedValue, $result);
+    }
 }

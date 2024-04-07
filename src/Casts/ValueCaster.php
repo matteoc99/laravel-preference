@@ -21,7 +21,6 @@ class ValueCaster implements CastsAttributes
             return $caster->castFromString($value);
         }
 
-        //default do nothing
         return $value;
 
     }

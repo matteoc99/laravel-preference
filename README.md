@@ -103,7 +103,7 @@ php artisan migrate
 ### Concepts
 
 Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
-> The default caster supports all major primitives, enums, as well as time/datetime/date and timestamp which get
+> The default caster supports all major primitives, enums, objects, as well as time/datetime/date and timestamp which get
 > converted
 > with `Carbon/Carbon`
 
@@ -157,7 +157,7 @@ public function up(): void
         ->updateOrCreate()
 
     // or with casting
-    PreferenceBuilder::init(Preferences::LANGUAGE, Cast::BACKED_ENUM)
+    PreferenceBuilder::init(Preferences::LANGUAGE, Cast::ENUM)
     ->withDefaultValue(Language::EN)
     ->create()
 
@@ -275,7 +275,9 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ### Available Casts
 
-INT, FLOAT, STRING, BOOL, ARRAY, TIME, DATE, DATETIME, TIMESTAMP, BACKED_ENUM
+INT, FLOAT, STRING, BOOL,
+ARRAY, TIME, DATE, DATETIME,
+TIMESTAMP, BACKED_ENUM, ENUM, OBJECT
 
 ### Custom Caster
 
@@ -320,21 +322,25 @@ enum MyCast: string implements CastableEnum
 
 > rules need to implement `ValidationRule`
 
-> additionally, if your rule requires parameter, extend `DataRule`
-> which then will provide the parameters via `getData()` as an array of params
-
 ```php
-class MyRule extends DataRule
+class MyRule implements ValidationRule
 {
+
+    protected array $data;
+
+    public function __construct(...$data)
+    {
+        $this->data = $data;
+    }
 
     public function message()
     {
-        return sprintf("Wrong Timezone, one of: %s expected", implode(", ",$this->getData()));
+        return sprintf("Wrong Timezone, one of: %s expected", implode(", ",$this->data));
     }
     
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if(!Str::startsWith($value, $this->getData())){
+        if(!Str::startsWith($value, $this->data)){
             $fail($this->message());
         }
     }
@@ -366,10 +372,10 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
 
 #### URI Parameters
 
-`scope_id`: The unique identifier of the scope (e.g., a user's ID).
-`preference`: The value of the specific preference enum  (e.g., General::LANGUAGE->value).
-`group`: A mapping of group names to their corresponding Enum classes. See config below
-`scope`: A mapping of scope names to their corresponding Eloquent model. See config below
+`scope_id`: The unique identifier of the scope (e.g., a user's ID).  
+`preference`: The value of the specific preference enum  (e.g., General::LANGUAGE->value).   
+`group`: A mapping of group names to their corresponding Enum classes. See config below   
+`scope`: A mapping of scope names to their corresponding Eloquent model. See config below   
 
 ### Example
 
@@ -448,6 +454,7 @@ in the config file
 - Switch from `HasValidation` to `ValidationRule`
 - Signature changes on the trait: group got removed and name now requires a `PreferenceGroup`
 - Builder: setting group got removed and name now expects a `PreferenceGroup` enum
+- `DataRule` has been removed, add a constructor to get you own, tailored, params
 
 ## Test
 

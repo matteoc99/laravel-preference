@@ -45,9 +45,9 @@ class PreferenceBuilderBulkTest extends TestCase
 
         PreferenceBuilder::initBulk($preferences);
 
-        $this->assertDatabaseCount('preferences', 2);
-        $this->assertDatabaseHas('preferences', ['name' => General::LANGUAGE]);
-        $this->assertDatabaseHas('preferences', ['name' => VideoPreferences::LANGUAGE]);
+        $this->assertDatabaseCount((new Preference())->getTable(), 2);
+        $this->assertDatabaseHas((new Preference())->getTable(), ['name' => General::LANGUAGE]);
+        $this->assertDatabaseHas((new Preference())->getTable(), ['name' => VideoPreferences::LANGUAGE]);
     }
 
     /** @test */
@@ -66,8 +66,8 @@ class PreferenceBuilderBulkTest extends TestCase
 
         PreferenceBuilder::deleteBulk($deletePreferences);
 
-        $this->assertDatabaseCount('preferences', 1);
-        $this->assertDatabaseHas('preferences', ['name' =>  VideoPreferences::LANGUAGE]);
+        $this->assertDatabaseCount((new Preference())->getTable(), 1);
+        $this->assertDatabaseHas((new Preference())->getTable(), ['name' =>  VideoPreferences::LANGUAGE]);
     }
 
     /** @test */
@@ -104,8 +104,8 @@ class PreferenceBuilderBulkTest extends TestCase
 
         PreferenceBuilder::initBulk($preferences);
 
-        $this->assertDatabaseCount('preferences', 2);
-        $this->assertDatabaseHas('preferences', ['name' => General::LANGUAGE]);
+        $this->assertDatabaseCount((new Preference())->getTable(), 2);
+        $this->assertDatabaseHas((new Preference())->getTable(), ['name' => General::LANGUAGE]);
 
         $found = Preference::query()->where('name', "=", General::LANGUAGE);
         $this->assertEquals(1, $found->count());
@@ -148,11 +148,11 @@ class PreferenceBuilderBulkTest extends TestCase
         ];
 
         PreferenceBuilder::initBulk($preferences);
-        $this->assertDatabaseCount('preferences', 2);
+        $this->assertDatabaseCount((new Preference())->getTable(), 2);
         $this->assertEquals(true,$this->testUser->getPreference(General::LANGUAGE));
 
         PreferenceBuilder::deleteBulk($preferences);
-        $this->assertDatabaseCount('preferences', 0);
+        $this->assertDatabaseCount((new Preference())->getTable(), 0);
 
     }
 

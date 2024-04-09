@@ -3,6 +3,8 @@
 namespace Matteoc99\LaravelPreference\Utils;
 
 use Illuminate\Support\Facades\Config;
+use Matteoc99\LaravelPreference\Models\Preference;
+use Matteoc99\LaravelPreference\Models\UserPreference;
 
 class ConfigHelper
 {
@@ -10,6 +12,17 @@ class ConfigHelper
     public static function getDbConnection(): null|string
     {
         return Config::get('user_preference.db.connection');
+    }
+
+    public static function getDbTableName(string $class, string $default = ''): string
+    {
+        $config = match ($class) {
+            Preference::class => 'preferences_table_name',
+            UserPreference::class => 'user_preferences_table_name',
+            default => throw new \InvalidArgumentException("Unsupported class: $class"),
+        };
+
+        return Config::get("user_preference.db.$config", $default);
     }
 
     public static function areRoutesEnabled(): bool
@@ -26,12 +39,12 @@ class ConfigHelper
 
     public static function getGroup(string $groupName): string|null
     {
-        return Config::get("user_preference.routes.groups.{$groupName}");
+        return Config::get("user_preference.routes.groups.$groupName");
     }
 
     public static function getScope(string $scopeName): string|null
     {
-        return Config::get("user_preference.routes.scopes.{$scopeName}");
+        return Config::get("user_preference.routes.scopes.$scopeName");
     }
 
     public static function getGroups(): array

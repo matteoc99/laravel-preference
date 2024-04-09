@@ -72,7 +72,9 @@ php artisan vendor:publish --tag="laravel-preference-config"
 ```php
   'db' => [
         'connection' => null, //string: the connection name to use 
-    ], // null -> use defaults
+        'preferences_table_name'      => 'preferences',
+        'user_preferences_table_name' => 'user_preferences',
+    ],
     'routes' => [
         'enabled'     => false, // set true to register routes, more on that later
         'middlewares' => [
@@ -92,6 +94,8 @@ php artisan vendor:publish --tag="laravel-preference-config"
     ]
 ```
 
+> Consider changing the base table names before running the migrations, if needed
+
 Run the migrations with:
 
 ```bash
@@ -103,9 +107,8 @@ php artisan migrate
 ### Concepts
 
 Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
-> The default caster supports all major primitives, enums, objects, as well as time/datetime/date and timestamp which get
-> converted
-> with `Carbon/Carbon`
+> The default caster supports all major primitives, enums, objects, as well as time/datetime/date and timestamp which
+> get converted with `Carbon/Carbon`
 
 ### Define your preferences
 
@@ -375,7 +378,7 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
 `scope_id`: The unique identifier of the scope (e.g., a user's ID).  
 `preference`: The value of the specific preference enum  (e.g., General::LANGUAGE->value).   
 `group`: A mapping of group names to their corresponding Enum classes. See config below   
-`scope`: A mapping of scope names to their corresponding Eloquent model. See config below   
+`scope`: A mapping of scope names to their corresponding Eloquent model. See config below
 
 ### Example
 

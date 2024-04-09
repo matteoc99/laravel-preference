@@ -24,4 +24,10 @@ class BaseModel extends Model
         return Arr::only($this->attributesToArray(), $keys);
     }
 
+    public function getTable()
+    {
+        return ConfigHelper::getDbTableName(get_class($this), parent::getTable());
+    }
+
+
 }

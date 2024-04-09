@@ -4,6 +4,7 @@ namespace Matteoc99\LaravelPreference\Tests;
 
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
+use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Rules\InRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
@@ -39,6 +40,20 @@ class PreferenceBasicTest extends TestCase
 
         $this->assertEquals('de', $preference);
     }
+
+    /** @test */
+    public function set_and_get_with_instance()
+    {
+        /**@var Preference $preference * */
+        $preference = Preference::query()->where('name', General::LANGUAGE->value)->first();
+        $this->testUser->setPreference($preference, 'it');
+
+        $result = $this->testUser->getPreference(General::LANGUAGE);
+
+        $this->assertEquals('it', $result);
+        $this->assertEquals($result, $this->testUser->getPreference($preference));
+    }
+
 
     /** @test */
     public function remove_preference()
@@ -88,7 +103,7 @@ class PreferenceBasicTest extends TestCase
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
 
-        $this->assertDatabaseCount('preferences', 3);
+        $this->assertDatabaseCount((new Preference())->getTable(), 3);
 
         $this->testUser->setPreference(VideoPreferences::QUALITY, "144p");
 

@@ -30,17 +30,19 @@ trait HasPreferences
     /**
      * Get a user's preference value or default if not set.
      *
-     * @param PreferenceGroup $name
-     * @param mixed|null      $default Default value if preference not set.
+     * @param PreferenceGroup|Preference $preference
+     * @param mixed|null                 $default Default value if preference not set.
      *
      * @return mixed
-     * @throws PreferenceNotFoundException|AuthorizationException
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
      */
-    public function getPreference(PreferenceGroup $name, mixed $default = null): mixed
+    public function getPreference(PreferenceGroup|Preference $preference, mixed $default = null): mixed
     {
+
         $this->authorize(PolicyAction::GET);
 
-        $preference = $this->validateAndRetrievePreference($name);
+        $preference = $this->validateAndRetrievePreference($preference);
 
         $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
 
@@ -50,17 +52,18 @@ trait HasPreferences
     /**
      * Set or update a user's preference value.
      *
-     * @param PreferenceGroup $name
-     * @param mixed           $value Value to set for the preference.
+     * @param PreferenceGroup|Preference $preference
+     * @param mixed                      $value Value to set for the preference.
      *
-     * @throws PreferenceNotFoundException|AuthorizationException|ValidationException
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     * @throws ValidationException
      */
-    public function setPreference(PreferenceGroup $name, mixed $value): void
+    public function setPreference(PreferenceGroup|Preference $preference, mixed $value): void
     {
         $this->authorize(PolicyAction::UPDATE);
 
-
-        $preference = $this->validateAndRetrievePreference($name);
+        $preference = $this->validateAndRetrievePreference($preference);
 
         $validator = Validator::make(['value' => $value], ['value' => $preference->getValidationRules()]);
 
@@ -74,16 +77,18 @@ trait HasPreferences
     /**
      * Remove a user's preference.
      *
-     * @param PreferenceGroup $name
+     * @param PreferenceGroup|Preference $preference
      *
      * @return int Number of deleted records.
-     * @throws PreferenceNotFoundException|AuthorizationException
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
      */
-    public function removePreference(PreferenceGroup $name): int
+    public function removePreference(PreferenceGroup|Preference $preference): int
     {
         $this->authorize(PolicyAction::DELETE);
 
-        $preference = $this->validateAndRetrievePreference($name);
+        $preference = $this->validateAndRetrievePreference($preference);
+
 
         return $this->userPreferences()->where('preference_id', $preference->id)->delete();
     }
@@ -112,21 +117,26 @@ trait HasPreferences
     /**
      * Validate existence of a preference and retrieve it.
      *
-     * @param PreferenceGroup $name Preference name.
+     * @param PreferenceGroup|Preference $preference Preference name.
      *
      * @return Preference
      * @throws PreferenceNotFoundException If preference not found.
      */
-    private function validateAndRetrievePreference(PreferenceGroup $name): Preference
+    private function validateAndRetrievePreference(PreferenceGroup|Preference $preference): Preference
     {
-        SerializeHelper::conformNameAndGroup($name, $group);
 
-        /**@var string $name * */
-        $preference = Preference::where('group', $group)->where('name', $name)->first();
+        if (!$preference instanceof Preference) {
 
-        if (!$preference) {
-            throw new PreferenceNotFoundException("Preference not found: $name in group $group");
+            SerializeHelper::conformNameAndGroup($preference, $group);
+
+            /**@var Preference $preference * */
+            $preference = Preference::where('group', $group)->where('name', $preference)->first();
         }
+        if (!$preference) {
+            throw new PreferenceNotFoundException("Preference not found: $preference in group $group");
+        }
+
+        //Todo Gate
 
         return $preference;
     }

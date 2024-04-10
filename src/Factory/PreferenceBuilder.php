@@ -4,14 +4,16 @@ namespace Matteoc99\LaravelPreference\Factory;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
-use Matteoc99\LaravelPreference\Casts\RuleCaster;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use Matteoc99\LaravelPreference\Utils\ValidationHelper;
 
 class PreferenceBuilder
 {
@@ -56,6 +58,12 @@ class PreferenceBuilder
     }
 
 
+    public function withPolicy(PreferencePolicy $policy): static
+    {
+        $this->preference->policy = $policy;
+        return $this;
+    }
+
     public function withDefaultValue(mixed $value): static
     {
         $this->preference->default_value = $value;
@@ -76,16 +84,25 @@ class PreferenceBuilder
 
     public function create(): Preference
     {
-        $this->preference->save();
-        return $this->preference;
+        return $this->updateOrCreate();
     }
 
     public function updateOrCreate(): Preference
     {
-        $this->preference = Preference::updateOrCreate($this->preference->toArrayOnly(['name', 'group']));
-        return $this->preference;
+        if (isset($this->preference->default_value)) {
+            ValidationHelper::validatePreference($this->preference);
+        }
+
+        $this->preference = Preference::updateOrCreate(
+            $this->preference->toArrayOnly(['name', 'group']),
+            $this->preference->attributesToArray()
+        );
+        return $this->preference->fresh();
     }
 
+    /**
+     * @throws ValidationException
+     */
     public static function initBulk(array $preferences): void
     {
         if (empty($preferences)) {
@@ -96,24 +113,26 @@ class PreferenceBuilder
             if (empty($preferenceData['cast'])) {
                 $preferenceData['cast'] = Cast::STRING;
             }
-
             if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
                 throw new InvalidArgumentException(
                     sprintf("index: #%s name is required and needs to be a PreferenceGroup", $key)
                 );
             }
-
             if (empty($preferenceData['cast']) || !($preferenceData['cast'] instanceof CastableEnum)) {
                 throw new InvalidArgumentException(
                     sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $key)
                 );
             }
-
-            if (!empty($preferenceData['default_value']) && !empty($preferenceData['rule']) && !$preferenceData['rule']->passes('', $preferenceData['default_value'])) {
+            if (!empty($preferenceData['rule']) && !$preferenceData['rule'] instanceof ValidationRule) {
                 throw new InvalidArgumentException(
-                    sprintf("index: #%s default_value fails the validation rule", $key)
+                    sprintf("index: #%s validation rule musst implement ValidationRule", $key)
                 );
             }
+
+            if (!empty($preferenceData['default_value'])) {
+                ValidationHelper::validateValue($preferenceData['default_value'], $preferenceData['cast'], $preferenceData['rule']);
+            }
+
 
             if (array_key_exists('group', $preferenceData)) {
                 throw new InvalidArgumentException(
@@ -170,4 +189,6 @@ class PreferenceBuilder
 
         return $query->delete();
     }
+
+
 }

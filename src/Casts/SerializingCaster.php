@@ -8,11 +8,12 @@ class SerializingCaster
 {
     public function get(?Model $model, string $key, mixed $value, array $attributes)
     {
-        return unserialize($value);
+
+        return empty($value) ? $value : unserialize($value);
     }
 
     public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
-        return serialize($value);
+        return  empty($value) ? $value :serialize($value);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Tests;
 
+use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
@@ -88,7 +89,7 @@ class PreferenceBuilderBulkTest extends TestCase
             ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 10, 'rule' => new LowerThanRule(5)]
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ValidationException::class);
         PreferenceBuilder::initBulk($preferences);
     }
 
@@ -143,8 +144,8 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_with_all_options()
     {
         $preferences = [
-            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
-            ['name' => General::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
         ];
 
         PreferenceBuilder::initBulk($preferences);

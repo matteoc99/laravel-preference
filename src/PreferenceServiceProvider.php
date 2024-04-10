@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference;
 
 use Illuminate\Support\ServiceProvider;
+use Matteoc99\LaravelPreference\Console\Commands\PreferenceMigrate;
 use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 class PreferenceServiceProvider extends ServiceProvider
@@ -24,6 +25,12 @@ class PreferenceServiceProvider extends ServiceProvider
 
         if (ConfigHelper::areRoutesEnabled()) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        }
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                PreferenceMigrate::class,
+            ]);
         }
     }
 }

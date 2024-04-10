@@ -278,9 +278,25 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ### Available Casts
 
-INT, FLOAT, STRING, BOOL,
-ARRAY, TIME, DATE, DATETIME,
-TIMESTAMP, BACKED_ENUM, ENUM, OBJECT
+| Cast        | Explanation                                                                       |
+|-------------|-----------------------------------------------------------------------------------|
+| INT         | Converts and Validates a value to be an integer.                                  |
+| FLOAT       | Converts and Validates a value to be a floating-point number.                     |
+| STRING      | Converts and Validates a value to be a string.                                    |
+| BOOL        | Converts and Validates a value to be a boolean (regards non-empty as `true`).     |
+| ARRAY       | Converts and Validates a value to be an array.                                    |
+| BACKED_ENUM | Ensures the value is a BackedEnum type. Useful for enums with underlying values.  |
+| ENUM        | Ensures the value is a UnitEnum type. Useful for enums without underlying values. |
+| OBJECT      | Ensures that the value is an object.                                              |
+| NONE        | No casting is performed. Returns the value as-is.                                 |
+
+| Date-Casts | Explanation                                                                                                  |
+|------------|--------------------------------------------------------------------------------------------------------------|
+|            | Converts a value using Carbon::parse, and always return a Carbon instance. <br/> Validation is Cast-Specific |
+| DATE       | sets the time to be `00:00`.                                                                                 |
+| TIME       | Always uses the current date, setting only the time                                                          |
+| DATETIME   | with both date and time(optionally).                                                                         |
+| TIMESTAMP  | allows a string/int timestamp or a carbon instance                                                           |
 
 ### Custom Caster
 
@@ -458,6 +474,10 @@ in the config file
 - Signature changes on the trait: group got removed and name now requires a `PreferenceGroup`
 - Builder: setting group got removed and name now expects a `PreferenceGroup` enum
 - `DataRule` has been removed, add a constructor to get you own, tailored, params
+- database serialization incompatibilities will require you to rerun your Preference migrations
+    - [single mode](#single-mode): make sure to use `updateOrCreate`,
+      e.g ` PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();`
+    - [bulk mode](#bulk-mode): initBulk as usual, as it works with upsert
 
 ## Test
 

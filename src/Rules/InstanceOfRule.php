@@ -11,13 +11,6 @@ class InstanceOfRule implements ValidationRule
 
     public function __construct(protected string $instance) { }
 
-    public function passes($attribute, $value): bool
-    {
-        if (!is_string($value)) $value = $value::class;
-        if (!class_exists($value)) return false;
-
-        return in_array($this->instance, class_implements($value));
-    }
 
     public function message(): string
     {
@@ -26,7 +19,13 @@ class InstanceOfRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!$this->passes($attribute, $value)) {
+        if (!is_string($value)) $value = $value::class;
+        if (!class_exists($value)) {
+            $fail($this->message());
+            return;
+        }
+
+        if (!in_array($this->instance, class_implements($value))) {
             $fail($this->message());
         }
     }

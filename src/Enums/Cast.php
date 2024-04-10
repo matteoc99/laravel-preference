@@ -15,6 +15,7 @@ use UnitEnum;
 
 enum Cast: string implements CastableEnum
 {
+    case NONE = 'none';
     case INT = 'int';
     case FLOAT = 'float';
     case STRING = 'string';
@@ -32,6 +33,7 @@ enum Cast: string implements CastableEnum
     public function validation(): ValidationRule|array|string|null
     {
         return match ($this) {
+            self::NONE => null,
             self::INT => 'integer',
             self::FLOAT => 'numeric',
             self::STRING => 'string',
@@ -57,7 +59,7 @@ enum Cast: string implements CastableEnum
             self::DATE, self::DATETIME => new Carbon($value),
             self::TIME => Carbon::now()->setTimeFromTimeString($value),
             self::TIMESTAMP => Carbon::createFromTimestamp($value),
-            self::BACKED_ENUM, self::ENUM, self::OBJECT => unserialize($value),
+            self::NONE, self::BACKED_ENUM, self::ENUM, self::OBJECT => unserialize($value),
         };
     }
 
@@ -75,7 +77,7 @@ enum Cast: string implements CastableEnum
             self::DATETIME => $value->toDateTimeString(),
             self::TIMESTAMP => $value->timestamp,
             self::TIME => $value->toTimeString(),
-            self::BACKED_ENUM, self::ENUM, self::OBJECT => serialize($value),
+            self::NONE, self::BACKED_ENUM, self::ENUM, self::OBJECT => serialize($value),
         };
     }
 
@@ -85,13 +87,13 @@ enum Cast: string implements CastableEnum
     private function ensureType(mixed $value): mixed
     {
         return match ($this) {
+            self::NONE => $value,
             self::INT => intval($value),
             self::FLOAT => floatval($value),
             self::STRING => (string)$value,
             self::BOOL => !empty($value),
             self::ARRAY => $this->ensureArray($value),
-            self::TIMESTAMP, self::DATETIME, self::DATE => $this->ensureCarbon($value),
-            self::TIME => $this->ensureCarbon($value, 'setTimeFromTimeString'),
+            self::TIMESTAMP, self::DATETIME, self::DATE, self::TIME => $this->ensureCarbon($value),
             self::BACKED_ENUM => $this->ensureBackedEnum($value),
             self::ENUM => $this->ensureEnum($value),
             self::OBJECT => $this->ensureObject($value),
@@ -111,11 +113,11 @@ enum Cast: string implements CastableEnum
     /**
      * @throws ValidationException
      */
-    private function ensureCarbon(mixed $value, string $method = 'parse'): Carbon
+    private function ensureCarbon(mixed $value): Carbon
     {
         if (!($value instanceof Carbon)) {
             try {
-                $value = Carbon::$method($value);
+                $value = Carbon::parse($value);
             } catch (Exception $_) {
                 throw ValidationException::withMessages([
                     "Invalid format for cast to " . $this->name

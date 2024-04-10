@@ -9,11 +9,6 @@ class LowerThanRule implements ValidationRule
 {
     public function __construct(protected int $value) { }
 
-    public function passes($attribute, $value)
-    {
-        return is_int($value) && $value < $this->value;
-    }
-
     public function message()
     {
         return sprintf("A value lower than  '%d' expected", $this->value);
@@ -21,7 +16,7 @@ class LowerThanRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!$this->passes($attribute, $value)) {
+        if (!is_int($value) || $value > $this->value) {
             $fail($this->message());
         }
     }

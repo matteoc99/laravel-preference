@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Tests\CastsTest;
 
+use Carbon\Carbon;
 use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Enums\Type;
@@ -56,6 +57,13 @@ class ValueCasterTest extends CasterTestCase
         $result                = $caster->get($this->dummyPref, '', $val, []);
         $this->assertEquals($val, $result);
 
+
+        $this->dummyPref->cast = Cast::NONE;
+        $val                   = Carbon::now();
+        $result                = $caster->get($this->dummyPref, '', serialize($val), []);
+        $this->assertEquals($val, $result);
+        $this->assertInstanceOf($val::class, $result);
+
     }
 
     /** @test */
@@ -67,15 +75,22 @@ class ValueCasterTest extends CasterTestCase
         $date                  = \Carbon\Carbon::now();
         $result                = $caster->set($this->dummyPref, '', $date, []);
         $this->assertEquals($date->toDateString(), $result);
+        $result = $caster->set($this->dummyPref, '', $date->toDateString(), []);
+        $this->assertEquals($date->toDateString(), $result);
 
         $this->dummyPref->cast = Cast::TIME;
         $time                  = \Carbon\Carbon::parse('10:30:00');
         $result                = $caster->set($this->dummyPref, '', $time, []);
         $this->assertEquals($time->toTimeString(), $result);
 
+        $result = $caster->set($this->dummyPref, '', $time->toTimeString(), []);
+        $this->assertEquals($time->toTimeString(), $result);
+
         $this->dummyPref->cast = Cast::DATETIME;
         $datetime              = \Carbon\Carbon::now();
         $result                = $caster->set($this->dummyPref, '', $datetime, []);
+        $this->assertEquals($datetime->toDateTimeString(), $result);
+        $result = $caster->set($this->dummyPref, '', $datetime->toDateTimeString(), []);
         $this->assertEquals($datetime->toDateTimeString(), $result);
 
         $this->dummyPref->cast = Cast::TIMESTAMP;
@@ -104,6 +119,13 @@ class ValueCasterTest extends CasterTestCase
         $val                   = 12345;
         $result                = $caster->set($this->dummyPref, '', $val, []);
         $this->assertEquals($val, $result);
+
+
+        $this->dummyPref->cast = Cast::NONE;
+        $val                   = Carbon::now();
+        $result                = $caster->set($this->dummyPref, '', $val, []);
+        $this->assertEquals($val, unserialize($result));
+        $this->assertInstanceOf($val::class, unserialize($result));
     }
 
     public static function castProvider(): array

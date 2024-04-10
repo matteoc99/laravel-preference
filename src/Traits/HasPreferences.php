@@ -14,6 +14,7 @@ use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
+use Matteoc99\LaravelPreference\Utils\ValidationHelper;
 
 trait HasPreferences
 {
@@ -65,11 +66,7 @@ trait HasPreferences
 
         $preference = $this->validateAndRetrievePreference($preference);
 
-        $validator = Validator::make(['value' => $value], ['value' => $preference->getValidationRules()]);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
+        ValidationHelper::validateValue($value, $preference->cast, $preference->rule);
 
         $this->userPreferences()->updateOrCreate(['preference_id' => $preference->id], ['value' => $value]);
     }

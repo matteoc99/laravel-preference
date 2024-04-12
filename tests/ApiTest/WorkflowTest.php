@@ -30,7 +30,10 @@ class WorkflowTest extends ApiTestCase
     /** @test */
     public function test_int_workflow()
     {
-        PreferenceBuilder::init(VideoPreferences::QUALITY, Cast::INT)->withDefaultValue(2)->withRule(new LowerThanRule(5))->create();
+        PreferenceBuilder::init(VideoPreferences::QUALITY, Cast::INT)
+            ->withDefaultValue(2)
+            ->withRule(new LowerThanRule(5))
+            ->create();
 
         $video = $this->get(route('preferences.user.video.get', ['scope_id' => 1, 'preference' => 'quality']));
         $video->assertSuccessful();

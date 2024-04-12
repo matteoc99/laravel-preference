@@ -82,6 +82,25 @@ class PreferenceCastTest extends TestCase
     }
 
     /** @test */
+    public function user_can_set_and_get_null_preference()
+    {
+        PreferenceBuilder::init(General::BIRTHDAY, Cast::DATE)->nullable()->create();
+        PreferenceBuilder::init(General::OPTIONS, Cast::BACKED_ENUM)->nullable()->create();
+
+        $this->testUser->setPreference(General::OPTIONS, null);
+        $this->testUser->setPreference(General::BIRTHDAY, null);
+
+
+
+        $preference = $this->testUser->getPreference(General::OPTIONS);
+        $this->assertEquals(null, $preference);
+
+        $preference = $this->testUser->getPreference(General::BIRTHDAY);
+        $this->assertEquals(null, $preference);
+
+    }
+
+    /** @test */
     public function user_can_set_and_get_preference_with_custom_cast()
     {
         $this->testUser->setPreference(General::TIMEZONE, 'Europe/Berlin');

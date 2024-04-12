@@ -131,23 +131,35 @@ class ValueCasterTest extends CasterTestCase
     public static function castProvider(): array
     {
         return [
-            'Bool False' => [
+            'bool_false' => [
                 Cast::BOOL, false, false, 'assertFalse'
             ],
-            'Int'        => [
+            'int_string' => [
                 Cast::INT, '123', 123, 'assertEquals'
             ],
-            'Float'      => [
+            'int'        => [
+                Cast::INT, 2, 2, 'assertEquals'
+            ],
+            'int_null'   => [
+                Cast::INT, null, null, 'assertEquals'
+            ],
+            'float'      => [
                 Cast::FLOAT, '3.14', 3.14, 'assertEquals'
             ],
-            'String'     => [
+            'string'     => [
                 Cast::STRING, 'hello', 'hello', 'assertEquals'
             ],
-            'Array'      => [
+            'array'      => [
                 Cast::ARRAY, json_encode([1, "hello"]), [1, "hello"], 'assertEquals'
             ],
-            'Null'       => [
-                null, '12345', '12345', 'assertEquals'
+            'null'       => [
+                null, null, null, 'assertEquals'
+            ],
+            'none'       => [
+                Cast::NONE, null, null, 'assertEquals'
+            ],
+            'date_null'       => [
+                Cast::DATE, null, null, 'assertEquals'
             ],
         ];
     }

@@ -22,6 +22,7 @@ use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
  * @property ValidationRule|null   $rule
  * @property PreferencePolicy|null $policy
  * @property mixed                 $default_value
+ * @property boolean               $nullable
  * @property Carbon                $created_at
  * @property Carbon                $updated_at
  */
@@ -36,6 +37,7 @@ class Preference extends BaseModel
         'description',
         'cast',
         'policy',
+        'nullable',
         'rule',
         'default_value',
     ];
@@ -47,6 +49,7 @@ class Preference extends BaseModel
         'rule'          => SerializingCaster::class,
         'policy'        => SerializingCaster::class,
         'default_value' => ValueCaster::class,
+        'nullable'      => 'boolean',
     ];
 
 }

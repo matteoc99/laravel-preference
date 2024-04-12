@@ -18,9 +18,9 @@ class ValidationHelper
      *
      * @throws ValidationException
      */
-    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule): void
+    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false): void
     {
-        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule)]);
+        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable)]);
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
@@ -34,12 +34,16 @@ class ValidationHelper
      */
     public static function validatePreference(Preference $preference)
     {
-        self::validateValue($preference->default_value, $preference->cast, $preference->rule);
+        self::validateValue($preference->default_value, $preference->cast, $preference->rule, $preference->nullable);
     }
 
-    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule): array
+    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false): array
     {
         $rules = [];
+        if ($nullable) {
+            $rules[] = "nullable";
+        }
+
         if ($cast) {
             $castValidation = $cast->validation();
             if ($castValidation) {

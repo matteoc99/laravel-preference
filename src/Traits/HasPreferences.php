@@ -6,7 +6,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Enums\PolicyAction;
@@ -47,6 +46,10 @@ trait HasPreferences
 
         $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
 
+        if (!empty($userPreference) && $preference->nullable) {
+            return $userPreference->value;
+        }
+
         return $userPreference?->value ?? $preference->default_value ?? $default;
     }
 
@@ -66,7 +69,12 @@ trait HasPreferences
 
         $preference = $this->validateAndRetrievePreference($preference);
 
-        ValidationHelper::validateValue($value, $preference->cast, $preference->rule);
+        ValidationHelper::validateValue(
+            $value,
+            $preference->cast,
+            $preference->rule,
+            $preference->nullable
+        );
 
         $this->userPreferences()->updateOrCreate(['preference_id' => $preference->id], ['value' => $value]);
     }

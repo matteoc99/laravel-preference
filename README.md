@@ -36,23 +36,17 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 
 ## Features
 
-- Type safe Casting,
-    - for example, Cast::BACKED_ENUM expects and always returns an instantiated enum, same goes for all other casts
-- Validation
-    - basic validation from casting and optionally additional rules
-- Extensible
-    - (Create your own Validation Rules and Casts)
+- Type safe Casting
+- Validation & Authorization
+- Extensible (Create your own Validation Rules and Casts)
 - Enum support
-    - store alle your preferences in one or more enums, to simplify the usage of this package
-- Can be used on any number of models
-- Api routes
+- Custom Api routes
     - work with preferences from a GUI or in addition to backend functionalities
-- Authorization checks
 
 ### Roadmap
 
 - Additional inbuilt Custom Rules -> v2.x
-- Model / Object Casting -> v2.x
+- Policies: ~2.0.0-beta.5
 - Suggestions are welcome
 
 ## Installation
@@ -161,8 +155,15 @@ public function up(): void
 
     // or with casting
     PreferenceBuilder::init(Preferences::LANGUAGE, Cast::ENUM)
-    ->withDefaultValue(Language::EN)
-    ->create()
+        ->withDefaultValue(Language::EN)
+        ->create()
+
+    // nullable support
+    PreferenceBuilder::init(Preferences::LANGUAGE, Cast::ENUM)
+        ->withDefaultValue(null)
+        ->nullable()
+        ->create()
+
 
 
 }
@@ -187,7 +188,9 @@ return new class extends Migration {
     public function up(): void
     {
 
-        PreferenceBuilder::initBulk($this->preferences());
+        PreferenceBuilder::initBulk($this->preferences(),
+        true/false // nullable for the whole Bulk
+        );
     }
 
     /**
@@ -207,6 +210,9 @@ return new class extends Migration {
             ['name' => Preferences::LANGUAGE, 'cast' => Cast::STRING, 'default_value' => 'en', 'rule' => new InRule("en", "it", "de")],
             ['name' => Preferences::THEME, 'cast' => Cast::STRING, 'default_value' => 'light'],
             ['name' => Preferences::CONFIGURATION, 'cast' => Cast::ARRAY],
+            ['name' => Preferences::CONFIGURATION, 
+                'nullable' => true // or nullable for only one configuration
+            ],
        ];
     }
 };

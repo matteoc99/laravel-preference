@@ -119,9 +119,7 @@ enum Cast: string implements CastableEnum
             try {
                 $value = Carbon::parse($value);
             } catch (Exception $_) {
-                throw ValidationException::withMessages([
-                    "Invalid format for cast to " . $this->name
-                ]);
+                throw ValidationException::withMessages(["Invalid format for cast to " . $this->name]);
             }
         }
         return $value;

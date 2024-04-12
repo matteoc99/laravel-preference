@@ -19,13 +19,19 @@ class InstanceOfRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_string($value)) $value = $value::class;
-        if (!class_exists($value)) {
+        if (!is_object($value) && !is_string($value)) {
             $fail($this->message());
             return;
         }
 
-        if (!in_array($this->instance, class_implements($value))) {
+        $className = is_object($value) ? get_class($value) : $value;
+
+        if (!class_exists($className)) {
+            $fail($this->message());
+            return;
+        }
+
+        if (!in_array($this->instance, class_implements($className))) {
             $fail($this->message());
         }
     }

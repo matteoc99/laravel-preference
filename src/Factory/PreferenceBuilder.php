@@ -27,7 +27,7 @@ class PreferenceBuilder
     public static function init(PreferenceGroup $name, CastableEnum $cast = Cast::STRING): static
     {
         $builder = new PreferenceBuilder();
-        return $builder->withName($name)->withCast($cast);
+        return $builder->withName($name)->withCast($cast)->nullable(false);
     }
 
     public static function delete(PreferenceGroup $name): int
@@ -82,6 +82,13 @@ class PreferenceBuilder
         return $this;
     }
 
+    public function nullable(bool $nullable = true)
+    {
+        $this->preference->nullable = $nullable;
+        return $this;
+    }
+
+
     public function create(): Preference
     {
         return $this->updateOrCreate();
@@ -103,7 +110,7 @@ class PreferenceBuilder
     /**
      * @throws ValidationException
      */
-    public static function initBulk(array $preferences): void
+    public static function initBulk(array $preferences, bool $nullable = false): void
     {
         if (empty($preferences)) {
             throw new InvalidArgumentException("no preferences provided");
@@ -113,6 +120,10 @@ class PreferenceBuilder
             if (empty($preferenceData['cast'])) {
                 $preferenceData['cast'] = Cast::STRING;
             }
+            if (!array_key_exists('nullable', $preferenceData)) {
+                $preferenceData['nullable'] = $nullable;
+            }
+
             if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
                 throw new InvalidArgumentException(
                     sprintf("index: #%s name is required and needs to be a PreferenceGroup", $key)
@@ -130,7 +141,12 @@ class PreferenceBuilder
             }
 
             if (!empty($preferenceData['default_value'])) {
-                ValidationHelper::validateValue($preferenceData['default_value'], $preferenceData['cast'], $preferenceData['rule']);
+                ValidationHelper::validateValue(
+                    $preferenceData['default_value'],
+                    $preferenceData['cast'] ?? null,
+                    $preferenceData['rule'] ?? null,
+                    $preferenceData['nullable'],
+                );
             }
 
 
@@ -159,6 +175,7 @@ class PreferenceBuilder
                 'default_value' => null,
                 'description'   => '',
                 'rule'          => null,
+                'nullable'      => false,
             ], $preferenceData);
         }
 

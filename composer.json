@@ -22,14 +22,15 @@
   "scripts" : {
     "analyse" : "vendor/bin/phpstan analyse",
     "test" : "vendor/bin/phpunit",
-    "coverage" : " php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
+    "coverage" : "php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
     "php": "^8.1",
     "laravel/framework": "^10 | ^11",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "doctrine/dbal": "^3.8"
   },
   "require-dev": {
     "orchestra/testbench": "^8.0",

@@ -96,9 +96,8 @@ class PreferenceBuilder
 
     public function updateOrCreate(): Preference
     {
-        if (isset($this->preference->default_value)) {
-            ValidationHelper::validatePreference($this->preference);
-        }
+        ValidationHelper::validatePreference($this->preference);
+
 
         $this->preference = Preference::updateOrCreate(
             $this->preference->toArrayOnly(['name', 'group']),
@@ -116,7 +115,7 @@ class PreferenceBuilder
             throw new InvalidArgumentException("no preferences provided");
         }
 
-        foreach ($preferences as $key => &$preferenceData) {
+        foreach ($preferences as $index => &$preferenceData) {
             if (empty($preferenceData['cast'])) {
                 $preferenceData['cast'] = Cast::STRING;
             }
@@ -124,37 +123,7 @@ class PreferenceBuilder
                 $preferenceData['nullable'] = $nullable;
             }
 
-            if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
-                throw new InvalidArgumentException(
-                    sprintf("index: #%s name is required and needs to be a PreferenceGroup", $key)
-                );
-            }
-            if (empty($preferenceData['cast']) || !($preferenceData['cast'] instanceof CastableEnum)) {
-                throw new InvalidArgumentException(
-                    sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $key)
-                );
-            }
-            if (!empty($preferenceData['rule']) && !$preferenceData['rule'] instanceof ValidationRule) {
-                throw new InvalidArgumentException(
-                    sprintf("index: #%s validation rule musst implement ValidationRule", $key)
-                );
-            }
-
-            if (!empty($preferenceData['default_value'])) {
-                ValidationHelper::validateValue(
-                    $preferenceData['default_value'],
-                    $preferenceData['cast'] ?? null,
-                    $preferenceData['rule'] ?? null,
-                    $preferenceData['nullable'],
-                );
-            }
-
-
-            if (array_key_exists('group', $preferenceData)) {
-                throw new InvalidArgumentException(
-                    sprintf("index: #%s group has been deprecated", $key)
-                );
-            }
+            ValidationHelper::validatePreferenceData($preferenceData, $index);
 
             SerializeHelper::conformNameAndGroup($preferenceData['name'], $preferenceData['group']);
 
@@ -166,7 +135,6 @@ class PreferenceBuilder
                 $preferenceData['default_value'] = $valueCaster->set(null, '', $preferenceData['default_value'], []);
             }
 
-
             $preferenceData['cast'] = serialize($preferenceData['cast']);
 
             // Ensure Defaults
@@ -174,6 +142,7 @@ class PreferenceBuilder
                 'group'         => 'general',
                 'default_value' => null,
                 'description'   => '',
+                'policy'        => null,
                 'rule'          => null,
                 'nullable'      => false,
             ], $preferenceData);
@@ -189,10 +158,10 @@ class PreferenceBuilder
         }
         $query = Preference::query();
 
-        foreach ($preferences as $key => $preferenceData) {
-            if (empty($preferenceData['name'])) {
+        foreach ($preferences as $index => $preferenceData) {
+            if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
                 throw new InvalidArgumentException(
-                    sprintf("index: #%s name is required", $key)
+                    sprintf("index: #%s name is required and must implement PreferenceGroup", $index)
                 );
             }
 

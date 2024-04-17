@@ -7,7 +7,7 @@ use Matteoc99\LaravelPreference\Models\Preference;
 
 interface PreferencePolicy
 {
-    public function index(Authenticatable $user, Preference $preference, mixed $value): bool;
+    public function index(Authenticatable $user, string $preferences): bool;
 
     public function get(Authenticatable $user, Preference $preference, mixed $value): bool;
 

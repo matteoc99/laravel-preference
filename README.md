@@ -22,6 +22,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
     * [Available Casts](#available-casts)
     * [Custom Caster](#custom-caster)
 * [Custom Rules](#custom-rules)
+* [Policies](#policies)
 * [Routing](#routing)
     * [Anantomy](#anantomy)
     * [Example](#example)
@@ -235,6 +236,9 @@ Signature:
 - $user the logged in user
 - PolicyAction enum: the action the user wants to perform index/get/update/delete
 
+> this is just the bare minimum regarding Authorization.  
+> For more fine-grained authorization checks refer to [Policies](#policies)
+
 #### Example implementation:
 
 ```php
@@ -374,6 +378,35 @@ class MyRule implements ValidationRule
  PreferenceBuilder::init("timezone",MyCast::TIMEZONE)
             ->withRule(new MyRule("Europe","Asia"))
 ```
+
+## Policies
+
+each preference can have a Policy, should [isUserAuthorized](#isuserauthorized) not be enough for your usecase
+
+### Creating policies
+
+implement `PreferencePolicy` and the 4 methods defined by the contract
+
+| parameter                   | description                                                |   
+|-----------------------------|------------------------------------------------------------|
+| Authenticatable $user       | the currently logged in user, if any                       |
+| PreferenceableModel $model  | the model on which you are trying to modify the preference |
+| PreferenceGroup $preference | the preference enum in question                            |
+
+### Adding policies
+
+````php
+    PreferenceBuilder::init(Preferences::LANGUAGE)
+        ->withPolicy(new MyPolicy())
+        ->updateOrCreate()
+
+
+    PreferenceBuilder::initBulk([
+        'name' => Preferences::LANGUAGE,
+        'policy' => new MyPolicy()
+     ]);
+
+````
 
 ## Routing
 

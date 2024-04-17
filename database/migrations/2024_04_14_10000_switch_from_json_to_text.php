@@ -12,9 +12,9 @@ return new class extends Migration {
         $preferenceTable = (new Preference())->getTable();
 
         Schema::table($preferenceTable, function (Blueprint $table) {
-            $table->text('policy')->change();
-            $table->text('cast')->change();
-            $table->text('rule')->change();
+            $table->text('policy')->nullable()->change();
+            $table->text('cast')->nullable()->change();
+            $table->text('rule')->nullable()->change();
         });
     }
 
@@ -23,9 +23,9 @@ return new class extends Migration {
         $preferenceTable = (new Preference())->getTable();
 
         Schema::table($preferenceTable, function (Blueprint $table) {
-            $table->json('policy')->change();
-            $table->json('cast')->change();
-            $table->json('rule')->change();
+            $table->json('policy')->nullable()->change();
+            $table->json('cast')->nullable()->change();
+            $table->json('rule')->nullable()->change();
         });
     }
 };

@@ -7,7 +7,6 @@ use Illuminate\Database\Schema\Builder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 use Matteoc99\LaravelPreference\PreferenceServiceProvider;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
@@ -17,6 +16,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
     protected User $testUser;
     protected User $otherUser;
+    protected User $adminUser;
 
     public function setUp(): void
     {
@@ -35,8 +35,14 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->testUser = new User([
             'email' => 'test@test.com'
         ]);
+
+        $this->adminUser = new User([
+            'email' => 'test@test.com',
+            'admin' => true,
+        ]);
         $this->testUser->save();
         $this->otherUser->save();
+        $this->adminUser->save();
 
         Auth::login($this->testUser);
     }
@@ -90,6 +96,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->getSchema()->create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('email');
+            $table->boolean('admin')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

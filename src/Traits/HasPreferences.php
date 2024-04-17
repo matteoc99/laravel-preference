@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
+use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
 use Matteoc99\LaravelPreference\Enums\PolicyAction;
 use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 use Matteoc99\LaravelPreference\Models\Preference;
@@ -40,9 +41,8 @@ trait HasPreferences
     public function getPreference(PreferenceGroup|Preference $preference, mixed $default = null): mixed
     {
 
-        $this->authorize(PolicyAction::GET);
 
-        $preference = $this->validateAndRetrievePreference($preference);
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::GET);
 
         $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
 
@@ -65,9 +65,8 @@ trait HasPreferences
      */
     public function setPreference(PreferenceGroup|Preference $preference, mixed $value): void
     {
-        $this->authorize(PolicyAction::UPDATE);
 
-        $preference = $this->validateAndRetrievePreference($preference);
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::UPDATE);
 
         ValidationHelper::validateValue(
             $value,
@@ -90,9 +89,8 @@ trait HasPreferences
      */
     public function removePreference(PreferenceGroup|Preference $preference): int
     {
-        $this->authorize(PolicyAction::DELETE);
 
-        $preference = $this->validateAndRetrievePreference($preference);
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::DELETE);
 
 
         return $this->userPreferences()->where('preference_id', $preference->id)->delete();
@@ -123,12 +121,16 @@ trait HasPreferences
      * Validate existence of a preference and retrieve it.
      *
      * @param PreferenceGroup|Preference $preference Preference name.
+     * @param PolicyAction               $action
      *
      * @return Preference
-     * @throws PreferenceNotFoundException If preference not found.
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
      */
-    private function validateAndRetrievePreference(PreferenceGroup|Preference $preference): Preference
+    private function validateAndRetrievePreference(PreferenceGroup|Preference $preference, PolicyAction $action): Preference
     {
+
+        $this->authorize($action);
 
         if (!$preference instanceof Preference) {
 
@@ -141,7 +143,27 @@ trait HasPreferences
             throw new PreferenceNotFoundException("Preference not found: $preference in group $group");
         }
 
-        //Todo Gate
+        if (!empty($preference->policy)) {
+            $policy     = $preference->policy;
+            $authorized = false;
+
+            $enum = SerializeHelper::reversePreferenceToEnum($preference);
+
+            if ($policy instanceof PreferencePolicy) {
+                $authorized = match ($action) {
+                    PolicyAction::INDEX => $policy->index(Auth::user(), $this, $enum),
+                    PolicyAction::GET => $policy->get(Auth::user(), $this, $enum),
+                    PolicyAction::UPDATE => $policy->update(Auth::user(), $this, $enum),
+                    PolicyAction::DELETE => $policy->delete(Auth::user(), $this, $enum),
+                    default => throw new AuthorizationException("Unknown Policy: " . $action->name),
+                };
+            }
+
+            if (!$authorized) {
+                throw new AuthorizationException("The user is not authorized to perform the action: " . $action->name);
+            }
+
+        }
 
         return $preference;
     }

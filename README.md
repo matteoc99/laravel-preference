@@ -28,6 +28,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
     * [Example](#example)
     * [Actions](#actions)
     * [Middlewares](#middlewares)
+* [Security](#security)
 * [Upgrade from v1](#upgrade-from-v1)
 * [Test](#test)
 * [Security Vulnerabilities](#security-vulnerabilities)
@@ -57,6 +58,8 @@ You can install the package via composer:
 ```bash
 composer require matteoc99/laravel-preference
 ```
+consider installing also `graham-campbell/security-core:^4.0` to take advantage of xss cleaning. see [Security](#security) for more information
+
 
 You can publish the config file with:
 
@@ -70,6 +73,7 @@ php artisan vendor:publish --tag="laravel-preference-config"
         'preferences_table_name'      => 'preferences',
         'user_preferences_table_name' => 'user_preferences',
     ],
+    'xss_cleaning' => true, // clean user input for cross site scripting attacks
     'routes' => [
         'enabled'     => false, // set true to register routes, more on that later
         'middlewares' => [
@@ -504,6 +508,17 @@ in the config file
 'user.general'=> 'verified' // scoped & grouped middleware only for a specific model + enum
 ],
 ```
+
+## Security
+
+XSS cleaning is only performed on user facing api calls. 
+this can be disabled, if not required, with the config: `user_preference.xss_cleaning`
+
+When setting preferences directly via `setPreference` 
+this cleaning step is assumed to have already been performed, if necessary.
+
+Consider installing [Security-Core](https://github.com/GrahamCampbell/Security-Core) to make use of this feature
+
 
 ## Upgrade from v1
 

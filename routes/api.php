@@ -2,16 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Matteoc99\LaravelPreference\Http\Controllers\PreferenceController;
-use Matteoc99\LaravelPreference\Http\Middlewares\PreferenceMiddleware;
 use Matteoc99\LaravelPreference\Utils\ConfigHelper;
-
 
 $scopes = ConfigHelper::getScopes();
 $groups = ConfigHelper::getGroups();
 
-$middlewares = array_merge([PreferenceMiddleware::class], ConfigHelper::getGlobalMiddlewares());
-
-Route::group(['middleware' => $middlewares, 'prefix' => ConfigHelper::getRoutePrefix(false)], function () use ($groups, $scopes) {
+Route::group(['middleware' => ConfigHelper::getGlobalMiddlewares(), 'prefix' => ConfigHelper::getRoutePrefix(false)], function () use ($groups, $scopes) {
 
     foreach ($scopes as $scope) {
         Route::group(['middleware' => ConfigHelper::getScopedMiddlewares($scope), 'prefix' => $scope], function () use ($scope, $groups) {

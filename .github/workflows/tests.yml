@@ -15,6 +15,7 @@ jobs:
       matrix:
         php: [ 8.3, 8.2, 8.1 ]
         laravel: [ "^11.0", "^10.0" ]
+        include_security: [true, false]  # Adding conditional package inclusion
         include:
           - laravel: "^11.0"
             testbench: 9.*
@@ -23,8 +24,8 @@ jobs:
         exclude:
           - laravel: "^11.0"
             php: 8.1
-    name: P${{ matrix.php }} - L${{ matrix.laravel }}
-
+          - laravel: "^11.0"
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${ matrix.include_security && 'With Security' || 'Without Security' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,6 +38,12 @@ jobs:
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}"
+          if ${{ matrix.include_security }}
+          then
+            composer require "graham-campbell/security-core:^4.0"
+          else
+            composer remove graham-campbell/security-core --no-update
+          fi
           composer update
       - name: Execute tests
         run: vendor/bin/phpunit ./tests

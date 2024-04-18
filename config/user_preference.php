@@ -1,12 +1,13 @@
 <?php
 
 return [
-    'db'     => [
+    'db'           => [
         'connection'                  => null,
         'preferences_table_name'      => 'preferences',
         'user_preferences_table_name' => 'user_preferences',
     ],
-    'routes' => [
+    'xss_cleaning' => true,
+    'routes'       => [
         'enabled'     => false,
         'middlewares' => [
             'auth', // general middleware

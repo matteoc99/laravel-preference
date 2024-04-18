@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Http\Controllers;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class PreferenceController extends Controller
 {
@@ -26,91 +28,102 @@ class PreferenceController extends Controller
 
     public function __construct(Request $request)
     {
-        $this->init($request);
+        try {
+            $this->init($request);
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
     }
 
 
     public function index(Request $request): JsonResponse
     {
-        return $this->prepareResponse(
-            $this->scope->getPreferences($this->group)
-        );
+        try {
+            return $this->prepareResponse(
+                $this->scope->getPreferences($this->group)
+            );
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
     }
 
     public function get(Request $request): JsonResponse
     {
-        return $this->prepareResponse(
-            $this->scope->getPreference($this->group)
-        );
+        try {
+            return $this->prepareResponse(
+                $this->scope->getPreference($this->group)
+            );
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
     }
 
     public function update(PreferenceUpdateRequest $request): JsonResponse
     {
 
-        $value = $request->validated('value');
-        $this->scope->setPreference($this->group, $value);
+        try {
+            $value = $request->validated('value');
+            $this->clean($value);
 
-        return $this->prepareResponse(
-            $this->scope->getPreference($this->group)
-        );
+            $this->scope->setPreference($this->group, $value);
+
+            return $this->prepareResponse(
+                $this->scope->getPreference($this->group)
+            );
+        } catch (Throwable $exception) {
+            return $this->handleException($exception);
+        }
     }
 
     public function delete(Request $request): JsonResponse
     {
-        $this->scope->removePreference($this->group);
+        try {
+            $this->scope->removePreference($this->group);
 
-        return $this->prepareResponse(
-            $this->scope->getPreference($this->group)
-        );
+            return $this->prepareResponse(
+                $this->scope->getPreference($this->group)
+            );
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
     }
 
 
     private function init(Request $request): void
     {
-        try {
-            list('scope' => $scope, 'group' => $group) = $this->extractScopeAndGroup($request->route()->getName());
+        list('scope' => $scope, 'group' => $group) = $this->extractScopeAndGroup($request->route()->getName());
 
-            $params = $request->route()->originalParameters();
+        $params = $request->route()->originalParameters();
 
-            $id         = $params['scope_id'] ?? null;
-            $preference = $params['preference'] ?? null;
+        $id         = $params['scope_id'] ?? null;
+        $preference = $params['preference'] ?? null;
 
-            if (empty($id)) {
-                throw new ConfigException("Scope ID is required.");
+        if (empty($id)) {
+            throw new ConfigException("Scope ID is required.");
+        }
+
+        $scopeClass = ConfigHelper::getScope($scope);
+        $groupClass = ConfigHelper::getGroup($group);
+
+
+        $this->validate($scopeClass, PreferenceableModel::class);
+        $this->validate($groupClass, PreferenceGroup::class);
+
+
+        $this->group = $groupClass;
+        $this->scope = $scopeClass::findOrFail($id);
+
+        if (!empty($preference)) {
+            try {
+                $this->group = $groupClass::from($preference);
+            } catch (\ValueError $e) {
+                throw new PreferenceNotFoundException($e->getMessage());
             }
-
-            $scopeClass = ConfigHelper::getScope($scope);
-            $groupClass = ConfigHelper::getGroup($group);
-
-
-            $this->validate($scopeClass, PreferenceableModel::class);
-            $this->validate($groupClass, PreferenceGroup::class);
-
-
-            $this->group = $groupClass;
-            $this->scope = $scopeClass::findOrFail($id);
-
-            if (!empty($preference)) {
-                try {
-                    $this->group = $groupClass::from($preference);
-                } catch (\ValueError $e) {
-                    throw new PreferenceNotFoundException($e->getMessage());
-                }
-            }
-
-        } catch (ConfigException $e) {
-            throw new BadRequestHttpException("Invalid configuration", $e);
-        } catch (ModelNotFoundException $exception) {
-            throw new NotFoundHttpException('Scope not found', $exception);
-        } catch (PreferenceNotFoundException $exception) {
-            throw new NotFoundHttpException($exception->getMessage(), $exception);
-        } catch (\Throwable $exception) {
-            throw new HttpException(500, 'Internal Server Error', $exception);
         }
     }
 
-    /*
-     * @throws ConfigException If validation fails
+    /**
+     * @throws ConfigException
      */
     private function validate(string $className, string $interfaceName): void
     {
@@ -124,7 +137,7 @@ class PreferenceController extends Controller
         }
     }
 
-    private function extractScopeAndGroup($routeName)
+    private function extractScopeAndGroup($routeName): array
     {
         $prefix = ConfigHelper::getRoutePrefix();
 
@@ -148,5 +161,34 @@ class PreferenceController extends Controller
             ];
         }
         return response()->json($pref);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function handleException(Throwable|\Exception $exception)
+    {
+        match ($exception::class) {
+            ConfigException::class => throw new BadRequestHttpException("Invalid configuration", $exception),
+            ModelNotFoundException::class, PreferenceNotFoundException::class => throw new NotFoundHttpException($exception->getMessage(), $exception),
+            AuthorizationException::class => throw new HttpException(403, $exception->getMessage(), $exception),
+            default => throw $exception, // Now this throw handles any other type of exception
+        };
+    }
+
+    private function clean(mixed &$value)
+    {
+        if (ConfigHelper::isXssCleanEnabled()) {
+            if (is_string($value)) {
+                $value = GrahamCampbell\SecurityCore\Security::create()->clean($value);
+            } elseif (is_iterable($value)) {
+                foreach ($value as &$item) {
+                    if (is_string($item)) {
+                        $item = GrahamCampbell\SecurityCore\Security::create()->clean($item);
+                    }
+                }
+                unset($item);
+            }
+        }
     }
 }

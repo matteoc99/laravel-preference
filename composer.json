@@ -19,10 +19,10 @@
       "Matteoc99\\LaravelPreference\\Tests\\": "tests/"
     }
   },
-  "scripts" : {
-    "analyse" : "vendor/bin/phpstan analyse",
-    "test" : "vendor/bin/phpunit",
-    "coverage" : "php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
+  "scripts": {
+    "analyse": "vendor/bin/phpstan analyse",
+    "test": "vendor/bin/phpunit",
+    "coverage": "php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
@@ -31,6 +31,9 @@
     "laravel/framework": "^10 | ^11",
     "ext-pdo": "*",
     "doctrine/dbal": "^3.8"
+  },
+  "suggest": {
+    "graham-campbell/security-core": "Required to use xss cleaning.(^4.0)"
   },
   "require-dev": {
     "orchestra/testbench": "^8.0",

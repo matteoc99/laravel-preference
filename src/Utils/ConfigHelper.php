@@ -17,10 +17,7 @@ class ConfigHelper
     public static function isXssCleanEnabled(): bool
     {
         $enabled = Config::get('user_preference.xss_cleaning', true);
-        if ($enabled && !class_exists('GrahamCampbell\\SecurityCore\\Security')) {
-            trigger_error('XSS cleaning is enabled, but the "graham-campbell/security-core" package is not installed.', E_USER_WARNING);
-        }
-        return $enabled;
+        return $enabled && class_exists('GrahamCampbell\\SecurityCore\\Security');
     }
 
     public static function getDbTableName(string $class, string $default = ''): string

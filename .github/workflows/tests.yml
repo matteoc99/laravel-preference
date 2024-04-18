@@ -21,11 +21,13 @@ jobs:
             testbench: 9.*
           - laravel: "^10.0"
             testbench: 8.*
+            include_security: false
         exclude:
           - laravel: "^11.0"
             php: 8.1
-          - laravel: "^11.0"
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - Security:${{matrix.include_security}}
+
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.include_security && 'With Security' || 'Without Security' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,7 +42,7 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}"
           if ${{ matrix.include_security }}
           then
-            composer install "graham-campbell/security-core:^4.0"
+            composer require "graham-campbell/security-core:^4.0"
           fi
           composer update
       - name: Execute tests

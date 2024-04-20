@@ -2,6 +2,8 @@
 
 namespace Matteoc99\LaravelPreference\Tests\ApiTest;
 
+use Matteoc99\LaravelPreference\Utils\ConfigHelper;
+
 class UpdateTest extends ApiTestCase
 {
     /** @test */

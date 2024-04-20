@@ -22,10 +22,6 @@ class UpdateTest extends ApiTestCase
            'value'=> '1'
         ]);
 
-        if($response->exception){
-            echo $response->exception;
-        }
-
         $response->assertRedirect();
     }
 
@@ -37,9 +33,7 @@ class UpdateTest extends ApiTestCase
         $response = $this->patch(route('preferences.user.general.update', ['scope_id' => 1,'preference' => 'language']),[
             'value'=> 'de'
         ]);
-        if($response->exception){
-            echo $response->exception;
-        }
+
         $response->assertSuccessful();
     }
 

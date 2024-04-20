@@ -539,6 +539,13 @@ Consider installing [Security-Core](https://github.com/GrahamCampbell/Security-C
 
 `composer coverage`
 
+#### Test the pipeline locally
+
+check out [act](https://github.com/nektos/act)
+install it via [gh](https://nektosact.com/installation/gh.html)
+
+then run: `composer pipeline`
+
 ## Security Vulnerabilities
 
 Please review [our security policy](SECURITY.md) on how to report security vulnerabilities.

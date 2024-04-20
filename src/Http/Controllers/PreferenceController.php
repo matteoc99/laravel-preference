@@ -180,11 +180,12 @@ class PreferenceController extends Controller
     {
         if (ConfigHelper::isXssCleanEnabled()) {
             if (is_string($value)) {
-                $value = GrahamCampbell\SecurityCore\Security::create()->clean($value);
+                $value = \GrahamCampbell\SecurityCore\Security::create()->clean($value);
             } elseif (is_iterable($value)) {
                 foreach ($value as &$item) {
                     if (is_string($item)) {
-                        $item = GrahamCampbell\SecurityCore\Security::create()->clean($item);
+
+                        $item = \GrahamCampbell\SecurityCore\Security::create()->clean($item);
                     }
                 }
                 unset($item);

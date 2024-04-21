@@ -8,5 +8,5 @@ enum VideoPreferences: string implements PreferenceGroup
 {
     case LANGUAGE = "language";
     case QUALITY = "quality";
-    case CONFIG = "configuration";
+    case CONFIG = "config";
 }

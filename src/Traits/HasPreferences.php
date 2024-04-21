@@ -54,6 +54,26 @@ trait HasPreferences
     }
 
     /**
+     * Get a user's preference value or default if not set with no casting
+     *
+     * @param PreferenceGroup|Preference $preference
+     * @param string|null                $default Default value if preference not set.
+     *
+     * @return array
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     */
+    public function getPreferenceDto(PreferenceGroup|Preference $preference, mixed $default = null): array
+    {
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::GET);
+
+        $value = $this->getPreference($preference, $default);
+
+        return $preference->cast ? $preference->cast->castToDto($value) : ['value' => json_encode($value)];
+    }
+
+
+    /**
      * Set or update a user's preference value.
      *
      * @param PreferenceGroup|Preference $preference

@@ -39,9 +39,7 @@ class PreferenceController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            return $this->prepareResponse(
-                $this->scope->getPreferences($this->group)
-            );
+            return response()->json($this->scope->getPreferences($this->group));
         } catch (Throwable $exception) {
             $this->handleException($exception);
         }
@@ -50,9 +48,7 @@ class PreferenceController extends Controller
     public function get(Request $request): JsonResponse
     {
         try {
-            return $this->prepareResponse(
-                $this->scope->getPreference($this->group)
-            );
+            return $this->prepareResponse();
         } catch (Throwable $exception) {
             $this->handleException($exception);
         }
@@ -67,9 +63,7 @@ class PreferenceController extends Controller
 
             $this->scope->setPreference($this->group, $value);
 
-            return $this->prepareResponse(
-                $this->scope->getPreference($this->group)
-            );
+            return $this->prepareResponse();
         } catch (Throwable $exception) {
             return $this->handleException($exception);
         }
@@ -80,9 +74,7 @@ class PreferenceController extends Controller
         try {
             $this->scope->removePreference($this->group);
 
-            return $this->prepareResponse(
-                $this->scope->getPreference($this->group)
-            );
+            return $this->prepareResponse();
         } catch (Throwable $exception) {
             $this->handleException($exception);
         }
@@ -149,18 +141,13 @@ class PreferenceController extends Controller
         ];
     }
 
-    private function prepareResponse(mixed $pref): JsonResponse
+    /**
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     */
+    private function prepareResponse(): JsonResponse
     {
-        if (!empty($pref) && is_object($pref) && method_exists($pref, 'toArray')) {
-            $pref = $pref->toArray();
-        }
-
-        if (!is_array($pref)) {
-            $pref = [
-                'value' => $pref,
-            ];
-        }
-        return response()->json($pref);
+        return response()->json($this->scope->getPreferenceDto($this->group));
     }
 
     /**
@@ -176,7 +163,7 @@ class PreferenceController extends Controller
         };
     }
 
-    private function clean(mixed &$value)
+    private function clean(mixed &$value): void
     {
         if (ConfigHelper::isXssCleanEnabled()) {
             if (is_string($value)) {

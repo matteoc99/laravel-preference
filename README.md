@@ -48,8 +48,14 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 ### Roadmap
 
 - Additional inbuilt Custom Rules -> v2.x
-- Policies: ~2.0.0-beta.5
+- Api Enum support -> v2.2
 - Suggestions are welcome
+
+### Known Issues
+`Cast::Object`: internally, laravel tries the toArray() 
+if the object implements Arrayable, resulting in an array rather than an object as required by the validation   
+
+Consider sticking to Enums or Primitive casts for now
 
 ## Installation
 
@@ -415,6 +421,9 @@ implement `PreferencePolicy` and the 4 methods defined by the contract
 ## Routing
 
 off by default, enable it in the config
+
+> Current limitation: it's not possible to set enums/object casts via API  
+> Enum support planned for v2.2
 
 ### Anantomy:
 

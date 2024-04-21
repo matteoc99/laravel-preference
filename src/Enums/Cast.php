@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
 use Matteoc99\LaravelPreference\Rules\IsRule;
+use Matteoc99\LaravelPreference\Rules\OrRule;
 use UnitEnum;
 
 
@@ -39,14 +40,38 @@ enum Cast: string implements CastableEnum
             self::STRING => 'string',
             self::BOOL => 'boolean',
             self::ARRAY => 'array',
-            self::DATE, self::DATETIME => 'date',
-            self::TIME => 'date_format:H:i',
-            self::TIMESTAMP => 'date_format:U',
+            self::DATE => new OrRule('date','date_format:Y-m-d', new InstanceOfRule(Carbon::class)),
+            self::DATETIME => new OrRule('date', new InstanceOfRule(Carbon::class)),
+            self::TIME => new OrRule('date_format:H:i', 'date_format:H:i:s', new InstanceOfRule(Carbon::class)),
+            self::TIMESTAMP => new OrRule('date_format:U', new InstanceOfRule(Carbon::class)),
             self::BACKED_ENUM => new InstanceOfRule(BackedEnum::class),
             self::ENUM => new InstanceOfRule(UnitEnum::class),
             self::OBJECT => new IsRule(Type::OBJECT),
         };
     }
+
+    /**
+     * @throws ValidationException
+     */
+    public function castToDto(mixed $value): array
+    {
+        return match ($this) {
+            self::NONE,
+            self::BACKED_ENUM,
+            self::ARRAY,
+            self::ENUM,
+            self::OBJECT => $this->valueToArray($value),
+            self::INT,
+            self::FLOAT,
+            self::STRING,
+            self::BOOL,
+            self::TIMESTAMP,
+            self::TIME,
+            self::DATE,
+            self::DATETIME => $this->valueToArray($this->castToString($value)),
+        };
+    }
+
 
     public function castFromString(string $value): mixed
     {
@@ -154,4 +179,22 @@ enum Cast: string implements CastableEnum
         }
         return $value;
     }
+
+    private function valueToArray(mixed $value): array
+    {
+        if (is_object($value) && method_exists($value, 'toArray')) {
+            return [
+                'value' => $value->toArray()
+            ];
+        }
+
+        if (!is_array($value)) {
+            return ['value' => is_string($value) ? $value : $this->castToString($value)];
+        }
+
+        return [
+            'value' => $value
+        ];
+    }
+
 }

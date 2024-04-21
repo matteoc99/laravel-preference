@@ -82,6 +82,21 @@ class PreferenceBuilder
         return $this;
     }
 
+    public function setAllowedClasses(...$classes): static
+    {
+        if( in_array($this->preference->cast,[Cast::OBJECT,Cast::ENUM,Cast::BACKED_ENUM])){
+            throw new InvalidArgumentException("Allowed classes are not supported for primitive casts");
+        }
+        foreach ($classes as $class) {
+            if (!is_string($class)) {
+                throw new InvalidArgumentException("All allowed classes must be strings.");
+            }
+        }
+
+        $this->preference->allowed_values = $classes;
+        return $this;
+    }
+
     public function nullable(bool $nullable = true)
     {
         $this->preference->nullable = $nullable;

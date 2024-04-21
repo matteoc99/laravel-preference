@@ -8,10 +8,11 @@ enum General: string implements PreferenceGroup
 {
     case LANGUAGE = "language";
     case QUALITY = "quality";
-    case CONFIG = "configuration";
+    case CONFIG = "config";
     case VOLUME = "volume";
     case EMAILS = "emails";
     case BIRTHDAY = "birthday";
     case TIMEZONE = "timezone";
     case OPTIONS = "options";
+    case REMINDER = "reminder";
 }

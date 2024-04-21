@@ -30,6 +30,10 @@ class InstanceOfRule implements ValidationRule
             $fail($this->message());
             return;
         }
+        if ($className == $this->instance) {
+            return; // success
+        }
+
 
         if (!in_array($this->instance, class_implements($className))) {
             $fail($this->message());

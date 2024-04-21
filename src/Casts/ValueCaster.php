@@ -15,7 +15,7 @@ class ValueCaster implements CastsAttributes
     {
         if (is_null($value)) return null;
 
-        $caster = $this->getCaster($model);
+        $caster = $this->getCaster($model, $attributes);
 
         if ($caster) {
             return $caster->castFromString($value);
@@ -29,19 +29,30 @@ class ValueCaster implements CastsAttributes
     {
         if (is_null($value)) return null;
 
-        $caster = $this->getCaster($model);
+        $caster = $this->getCaster($model, $attributes);
 
         if ($caster) {
             return $caster->castToString($value);
         }
 
-        //default do nothing
         return $value;
     }
 
-    private function getCaster(?Model $model): CastableEnum|null
+    private function getCaster(?Model $model, array $attributes): CastableEnum|null
     {
-        $caster = $this->caster ?? $model?->cast ?? $model?->preference?->cast ?? null;
+        if (array_key_exists('cast', $attributes)) {
+            $caster = unserialize($attributes['cast']);
+        } else if (is_null($model)) {
+            $caster = $this->caster;
+        } else {
+            $caster = $model->cast ?? null;
+            if (is_null($caster) && $model->isRelation('preference')) {
+                if (!$model->relationLoaded('preference')) {
+                    $model->load('preference');
+                }
+                $caster = $model->preference->cast ?? null;
+            }
+        }
 
         return $caster instanceof CastableEnum ? $caster : null;
     }

@@ -177,29 +177,26 @@ class WorkflowTest extends ApiTestCase
         $lastLogin->assertJson(['value' => $time]);
     }
 
-//    /** @test */
-//    public function test_backed_enum_workflow()
-//    {
-//        PreferenceBuilder::init(General::CONFIG, Cast::BACKED_ENUM)
-//            ->withDefaultValue(OtherPreferences::QUALITY)
-//            ->create();
-//
-//        $status = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => OtherPreferences::CONFIG->value]);
-//        $status->assertJson(['value' => OtherPreferences::CONFIG]);
-//    }
-//
-//
+    /** @test */
+    public function test_backed_enum_workflow()
+    {
+        PreferenceBuilder::init(General::CONFIG, Cast::BACKED_ENUM)
+            ->withDefaultValue(OtherPreferences::QUALITY)
+            ->create();
 
-//
-//    /** @test */
-//    public function test_object_workflow()
-//    {
-//        // issue:  if ($attributes[$key] instanceof Arrayable) {
-//        PreferenceBuilder::init(General::CONFIG, Cast::OBJECT)
-//            ->withDefaultValue($this->adminUser)
-//            ->create();
-//
-//        $profile = $this->patch(route('preferences.user.profile.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => ['name' => 'Jane Doe', 'email' => 'janedoe@example.com']]);
-//        $profile->assertRedirect();
-//    }
+        $config = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => OtherPreferences::CONFIG->value]);
+        $config->assertRedirect();
+    }
+
+
+    /** @test */
+    public function test_object_workflow()
+    {
+        PreferenceBuilder::init(General::CONFIG, Cast::OBJECT)
+            ->withDefaultValue($this->adminUser)
+            ->create();
+
+        $profile = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => ['name' => 'Jane Doe', 'email' => 'janedoe@example.com']]);
+        $profile->assertRedirect();
+    }
 }

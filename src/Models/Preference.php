@@ -55,4 +55,18 @@ class Preference extends BaseModel
         'nullable'       => 'boolean',
     ];
 
+    public function attributesToArray()
+    {
+
+        $attributes = parent::attributesToArray();
+        return array_merge($attributes,
+            [
+                'default_value'  => $this->default_value,
+                'policy'         => $this->policy,
+                'rule'           => $this->rule,
+                'cast'           => $this->cast,
+            ],
+        );
+    }
+
 }

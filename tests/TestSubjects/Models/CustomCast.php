@@ -30,6 +30,12 @@ enum CustomCast: string implements CastableEnum
         };
     }
 
+
+
+    public function isPrimitive(): bool
+    {
+            return true;
+    }
     public function castToDto(mixed $value): array
     {
         return ['value' => $value];

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
 use Matteoc99\LaravelPreference\Enums\PolicyAction;
@@ -88,11 +89,14 @@ trait HasPreferences
 
         $preference = $this->validateAndRetrievePreference($preference, PolicyAction::UPDATE);
 
+        $value = $this->restoreOriginalValue($preference, $value);
+
         ValidationHelper::validateValue(
             $value,
             $preference->cast,
             $preference->rule,
-            $preference->nullable
+            $preference->nullable,
+            $preference->allowed_values
         );
 
         $this->userPreferences()->updateOrCreate(['preference_id' => $preference->id], ['value' => $value]);
@@ -198,5 +202,36 @@ trait HasPreferences
         if (!$this->isUserAuthorized(Auth::user(), $action)) {
             throw new AuthorizationException("The user is not authorized to perform the action: " . $action->name);
         }
+    }
+
+    private function restoreOriginalValue(Preference $preference, mixed $value): mixed
+    {
+        if (!empty($preference->allowed_values)) {
+            foreach ($preference->allowed_values as $allowedClass) {
+
+                if (!is_string($value)) {
+                    continue;
+                }
+
+                if (!class_exists($allowedClass)) {
+                    throw new InvalidArgumentException("Class $allowedClass does not exist.");
+                }
+
+                if (in_array(\BackedEnum::class, class_implements($allowedClass))) {
+                    $val = $allowedClass::tryFrom($value);
+                    if (!empty($val)) {
+                        return $val;
+                    }
+                }
+
+                if (in_array(\UnitEnum::class, class_implements($allowedClass))) {
+                    if (defined("$allowedClass::$value")) {
+                        return constant("$allowedClass::$value");
+                    }
+                }
+            }
+
+        }
+        return $value;
     }
 }

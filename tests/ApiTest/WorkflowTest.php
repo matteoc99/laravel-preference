@@ -6,7 +6,11 @@ use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\BetweenRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPlainEnum;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\PlainEnum;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\SomePreferences;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\Theme;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 use Matteoc99\LaravelPreference\Utils\ConfigHelper;
@@ -178,25 +182,72 @@ class WorkflowTest extends ApiTestCase
     }
 
     /** @test */
+    public function test_enum_workflow()
+    {
+        PreferenceBuilder::init(General::CONFIG, Cast::ENUM)
+            ->setAllowedClasses(OtherPlainEnum::class, PlainEnum::class)
+            ->withDefaultValue(PlainEnum::LANGUAGE)
+            ->create();
+
+        $config = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => PlainEnum::QUALITY->name]);
+        $config->assertJson(['value' => PlainEnum::QUALITY->name]);
+
+        self::assertEquals(PlainEnum::QUALITY, $this->testUser->getPreference(General::CONFIG));
+    }
+
+    /** @test */
     public function test_backed_enum_workflow()
     {
         PreferenceBuilder::init(General::CONFIG, Cast::BACKED_ENUM)
+            ->setAllowedClasses(SomePreferences::class, OtherPreferences::class)
             ->withDefaultValue(OtherPreferences::QUALITY)
             ->create();
 
         $config = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => OtherPreferences::CONFIG->value]);
-        $config->assertRedirect();
+        $config->assertJson(['value' => OtherPreferences::CONFIG->value]);
+
+        self::assertEquals(OtherPreferences::CONFIG, $this->testUser->getPreference(General::CONFIG));
+
     }
 
 
     /** @test */
     public function test_object_workflow()
     {
+        // todo not supported yet
         PreferenceBuilder::init(General::CONFIG, Cast::OBJECT)
             ->withDefaultValue($this->adminUser)
             ->create();
 
         $profile = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => ['name' => 'Jane Doe', 'email' => 'janedoe@example.com']]);
         $profile->assertRedirect();
+    }
+
+    /** @test */
+    public function api_update_preference_with_allowed_enum()
+    {
+        PreferenceBuilder::init(General::THEME, Cast::ENUM)
+            ->setAllowedClasses(Theme::class)
+            ->create();
+
+        $response = $this->patchJson(route('preferences.user.general.update', ['scope_id' => $this->testUser->id, 'preference' => 'theme']), ['value' => 'DARK']);
+
+        $response->assertStatus(200)
+            ->assertJson(['value' => 'DARK']);
+        $this->assertEquals(Theme::DARK, $this->testUser->getPreference(General::THEME));
+    }
+
+    /** @test */
+    public function api_update_preference_with_unallowed_enum_value()
+    {
+        PreferenceBuilder::init(General::THEME, Cast::ENUM)
+            ->setAllowedClasses(Theme::class)
+            ->withDefaultValue(Theme::LIGHT)
+            ->create();
+
+        $response = $this->patchJson(route('preferences.user.general.update', ['scope_id' => $this->testUser->id, 'preference' => 'theme']), ['value' => 'INVALID']);
+
+        $response->assertStatus(422);
+        $this->assertEquals(Theme::LIGHT, $this->testUser->getPreference(General::THEME));
     }
 }

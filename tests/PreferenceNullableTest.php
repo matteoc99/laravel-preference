@@ -36,6 +36,17 @@ class PreferenceNullableTest  extends TestCase
     }
 
     /** @test */
+    public function single_mode_handles_nullable_correctly()
+    {
+        PreferenceBuilder::init(General::LANGUAGE)
+            ->nullable()
+            ->create();
+
+        $this->testUser->setPreference(General::LANGUAGE, null);
+        $this->assertNull($this->testUser->getPreference(General::LANGUAGE));
+    }
+
+    /** @test */
     public function preference_nullable_set_through_bulk_default()
     {
         $preferences = [
@@ -51,7 +62,7 @@ class PreferenceNullableTest  extends TestCase
     /** @test */
     public function preference_non_nullable_rejects_null()
     {
-        PreferenceBuilder::init(General::CONFIG, Cast::STRING)->create();
+        PreferenceBuilder::init(General::CONFIG)->create();
 
         $this->expectException(ValidationException::class);
         $this->testUser->setPreference(General::CONFIG, null);

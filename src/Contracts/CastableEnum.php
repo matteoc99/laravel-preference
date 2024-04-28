@@ -18,9 +18,11 @@ interface CastableEnum extends BackedEnum
 
     /**
      * used by the Controller to cast to json
+     *
      * @param mixed $value
      *
      * @return array
      */
     public function castToDto(mixed $value): array;
+
 }

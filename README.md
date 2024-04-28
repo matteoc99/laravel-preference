@@ -23,6 +23,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
     * [Custom Caster](#custom-caster)
 * [Custom Rules](#custom-rules)
 * [Policies](#policies)
+* [Preference Building](#preference-building)
 * [Routing](#routing)
     * [Anantomy](#anantomy)
     * [Example](#example)
@@ -48,7 +49,8 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 ### Roadmap
 
 - Additional inbuilt Custom Rules -> v2.x
-- Api Enum support -> v2.1
+- Allow array of preferenceBuilders in initBuk -> v2.1.1
+- Event System -> v2.2
 - Suggestions are welcome
 
 ## Installation
@@ -58,8 +60,9 @@ You can install the package via composer:
 ```bash
 composer require matteoc99/laravel-preference
 ```
-consider installing also `graham-campbell/security-core:^4.0` to take advantage of xss cleaning. see [Security](#security) for more information
 
+consider installing also `graham-campbell/security-core:^4.0` to take advantage of xss cleaning.
+see [Security](#security) for more information
 
 You can publish the config file with:
 
@@ -126,10 +129,11 @@ enum Preferences :string implements PreferenceGroup
     case QUALITY="quality";
     case CONFIG="configuration";
 }
+
 enum General :string implements PreferenceGroup
 {
     case LANGUAGE="language";
-    case THEME="quality";
+    case THEME="theme";
 }
 ```
 
@@ -194,7 +198,7 @@ return new class extends Migration {
     {
 
         PreferenceBuilder::initBulk($this->preferences(),
-        true/false // nullable for the whole Bulk
+        true // nullable for the whole Bulk
         );
     }
 
@@ -267,7 +271,7 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ```php
     $user->setPreference(Preferences::LANGUAGE,"de");
-    $user->getPreference(Preferences::LANGUAGE,); // 'de' as string
+    $user->getPreference(Preferences::LANGUAGE); // 'de' as string
 
     $user->setPreference(Preferences::LANGUAGE,"fr"); 
     // ValidationException because of the rule: ->withRule(new InRule("en","it","de"))
@@ -412,12 +416,24 @@ implement `PreferencePolicy` and the 4 methods defined by the contract
 
 ````
 
+## Preference Building
+
+| Single-Mode                         | Bulk-Mode (array-keys)                      | Constrains                                                                | Description                                                                                                                                                       |
+|-------------------------------------|---------------------------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| init(>name<,>cast<)                 | ```["name"=> >name<]```                     | \>name< = instanceof PreferenceGroup                                      | Unique identifier for the preference                                                                                                                              |
+| init(>name<,>cast<)                 | ```["cast"=> >cast<]```                     | \>cast< = instanceof CastableEnum                                         | Caster to translate the value between all different scenarios. Currently: Api-calls as well as saving to and retrieving fron the DB                               |
+| nullable(>nullable<)                | ```["nullable"=> >nullable<]```             | \>nullable< = bool                                                        | Whether the default value can be null and if the preference can be set to null                                                                                    |
+| withDefaultValue(>default_value<)   | ```["default_value"=> >default_value<]```   | \>default_value< = mixed, but must comply with the cast & validationRule  | Initial value for this preference                                                                                                                                 |
+| withDescription(>description<)      | ```["description"=> >description<]```       | \>description< = string                                                   | Legacy code from v1.x has no actual use as of now                                                                                                                 |
+| withPolicy(>policy<)                | ```["policy"=> >policy<]```                 | \>policy< = instanceof PreferencePolicy                                   | Authorize actions such as update/delete etc. on certain preferences.                                                                                              |
+| withRule(>rule<)                    | ```["rule"=> >rule<]```                     | \>rule< = instanceof ValidationRule                                       | Additional validation Rule, to validate values before setting them                                                                                                |
+| setAllowedClasses(>allowed_values<) | ```["allowed_values"=> >allowed_values<]``` | \>allowed_values< = array of string classes. For non Primitive Casts only | Current use-cases: <br/> - restrict classes of enum or object that can be set to this preference<br/> - reconstruct the original class when sending data via api. |
+
 ## Routing
 
 off by default, enable it in the config
 
-> Current limitation: it's not possible to set enums/object casts via API  
-> Enum support planned for v2.2
+> Current limitation: it's not possible to set object casts via API
 
 ### Anantomy:
 
@@ -480,10 +496,18 @@ will result in:
 (my_preferences.user.general.index)   
 equivalent to:  `$user->getPreferences(General::class)`
 
+```shell
+curl -X GET 'https://example.com/my_preferences/user/{scope_id}/general' 
+```
+
 #### GET
 
 (my_preferences.user.general.get)   
 equivalent to:  `$user->getPreference(General::{preference})`
+
+```shell
+curl -X GET 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' 
+```
 
 #### UPDATE
 
@@ -494,10 +518,41 @@ Payload:
 'value' => >value<
 }
 
+```shell
+curl -X PATCH 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' \
+    -d '{"value": "new_value"}'
+```
+
+##### Enum Patching
+
+When creating your enum preference, add `setAllowedClasses` containing the possible enums to reconstruct the value
+> ! if multiple cases are shared between enums, the first match is taken !   
+> -> consider having only one enum per preference to avoid overlaps
+
+then, when sending the value it varies:
+
+- BackedEnum: send the value or the case
+- UnitBacked: send the case
+
+Example: 
+```php
+enum Theme
+{
+    case LIGHT;
+    case DARK;
+}
+curl -X PATCH 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' \
+    -d '{"value": "DARK"}'
+```
+
 #### DELETE
 
 (my_preferences.user.general.delete)   
 equivalent to:  `$user->removePreference(General::{preference})`
+
+```shell
+curl -X DELETE 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' 
+```
 
 ### Middlewares
 
@@ -506,22 +561,25 @@ in the config file
 
 ```php
 'middlewares' => [
+'web', // required for Auth::user() and policies
 'auth', //no key => general middleware which gets applied to all routes
 'user'=> 'verified', //  scoped middleware only for user routes should you have other preferencable models
 'user.general'=> 'verified' // scoped & grouped middleware only for a specific model + enum
 ],
 ```
 
+**known Issues**: without the web middleware, you won't have access to the user via the Auth facade
+since it's set by the middleware. Looking into an alternative
+
 ## Security
 
-XSS cleaning is only performed on user facing api calls. 
+XSS cleaning is only performed on user facing api calls.
 this can be disabled, if not required, with the config: `user_preference.xss_cleaning`
 
-When setting preferences directly via `setPreference` 
+When setting preferences directly via `setPreference`
 this cleaning step is assumed to have already been performed, if necessary.
 
 Consider installing [Security-Core](https://github.com/GrahamCampbell/Security-Core) to make use of this feature
-
 
 ## Upgrade from v1
 

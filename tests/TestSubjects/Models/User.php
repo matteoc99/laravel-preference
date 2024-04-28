@@ -17,4 +17,6 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
     {
         return $user?->id == $this->id;
     }
+
+
 }

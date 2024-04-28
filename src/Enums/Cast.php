@@ -40,7 +40,7 @@ enum Cast: string implements CastableEnum
             self::STRING => 'string',
             self::BOOL => 'boolean',
             self::ARRAY => 'array',
-            self::DATE => new OrRule('date','date_format:Y-m-d', new InstanceOfRule(Carbon::class)),
+            self::DATE => new OrRule('date', 'date_format:Y-m-d', new InstanceOfRule(Carbon::class)),
             self::DATETIME => new OrRule('date', new InstanceOfRule(Carbon::class)),
             self::TIME => new OrRule('date_format:H:i', 'date_format:H:i:s', new InstanceOfRule(Carbon::class)),
             self::TIMESTAMP => new OrRule('date_format:U', new InstanceOfRule(Carbon::class)),
@@ -126,6 +126,15 @@ enum Cast: string implements CastableEnum
         };
     }
 
+    public function isPrimitive(): bool
+    {
+        return match ($this) {
+            self::BACKED_ENUM,
+            self::ENUM,
+            self::OBJECT => false,
+            default => true,
+        };
+    }
 
     private function ensureArray(mixed $value): array
     {
@@ -187,7 +196,15 @@ enum Cast: string implements CastableEnum
                 'value' => $value->toArray()
             ];
         }
-
+        if (is_object($value) && in_array(\BackedEnum::class, class_implements($value))) {
+            return [
+                'value' => $value->value
+            ];
+        } else if (is_object($value) && in_array(\UnitEnum::class, class_implements($value))) {
+            return [
+                'value' => $value->name
+            ];
+        }
         if (!is_array($value)) {
             return ['value' => is_string($value) ? $value : $this->castToString($value)];
         }
@@ -196,5 +213,4 @@ enum Cast: string implements CastableEnum
             'value' => $value
         ];
     }
-
 }

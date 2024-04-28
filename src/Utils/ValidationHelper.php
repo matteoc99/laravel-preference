@@ -10,6 +10,8 @@ use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
 use Matteoc99\LaravelPreference\Models\Preference;
+use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
+use Matteoc99\LaravelPreference\Rules\OrRule;
 
 class ValidationHelper
 {
@@ -22,9 +24,9 @@ class ValidationHelper
      *
      * @throws ValidationException
      */
-    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false): void
+    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, array|null $allowed_classes = []): void
     {
-        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable)]);
+        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable, $allowed_classes)]);
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
@@ -36,10 +38,15 @@ class ValidationHelper
      *
      * @throws ValidationException
      */
-    public static function validatePreference(Preference $preference)
+    public static function validatePreference(Preference $preference): void
     {
         if (isset($preference->default_value)) {
-            self::validateValue($preference->default_value, $preference->cast, $preference->rule, $preference->nullable);
+            self::validateValue(
+                $preference->default_value,
+                $preference->cast, $preference->rule,
+                $preference->nullable,
+                $preference->allowed_values
+            );
         }
     }
 
@@ -72,12 +79,17 @@ class ValidationHelper
             );
         }
 
+        if (!empty($preferenceData['allowed_values'])) {
+            self::validateAllowedClasses($preferenceData['cast'], $preferenceData['allowed_values']);
+        }
+
         if (!empty($preferenceData['default_value'])) {
             ValidationHelper::validateValue(
                 $preferenceData['default_value'],
                 $preferenceData['cast'],
                 $preferenceData['rule'] ?? null,
                 $preferenceData['nullable'],
+                $preferenceData['allowed_values'] ?? [],
             );
         }
 
@@ -89,11 +101,19 @@ class ValidationHelper
         }
     }
 
-    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false): array
+    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, array|null $allowed_classes = []): array
     {
         $rules = [];
         if ($nullable) {
             $rules[] = "nullable";
+        }
+        if (!empty($allowed_classes)) {
+            $instance_rules = [];
+            foreach ($allowed_classes as $class) {
+                $instance_rules[] = new InstanceOfRule($class);
+            }
+
+            $rules[] = new OrRule(...$instance_rules);
         }
 
         if ($cast) {
@@ -117,6 +137,30 @@ class ValidationHelper
             return [$rule];
         } else {
             return explode('|', $rule);
+        }
+    }
+
+    /**
+     * @param CastableEnum|null $cast
+     * @param array             $classes
+     *
+     * @return void
+     */
+    public static function validateAllowedClasses(?CastableEnum $cast, array $classes): void
+    {
+        if (empty($cast) || !($cast instanceof CastableEnum)) {
+            throw new InvalidArgumentException(
+                sprintf("Cast is required and needs to implement 'CastableEnum'")
+            );
+        }
+        if ($cast->isPrimitive()) {
+            throw new InvalidArgumentException("Allowed classes are not supported for primitive casts");
+        }
+
+        foreach ($classes as $class) {
+            if (!is_string($class) || !class_exists($class)) {
+                throw new InvalidArgumentException("All allowed classes must be strings and they must exist.");
+            }
         }
     }
 

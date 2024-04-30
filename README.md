@@ -26,7 +26,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 * [Preference Building](#preference-building)
 * [Routing](#routing)
     * [Anantomy](#anantomy)
-    * [Example](#example)
+    * [Example](#example-)
     * [Actions](#actions)
     * [Middlewares](#middlewares)
 * [Security](#security)
@@ -61,8 +61,11 @@ You can install the package via composer:
 composer require matteoc99/laravel-preference
 ```
 
-consider installing also `graham-campbell/security-core:^4.0` to take advantage of xss cleaning.
-see [Security](#security) for more information
+> [!IMPORTANT]
+> consider installing also `graham-campbell/security-core:^4.0` to take advantage of xss cleaning.
+> see [Security](#security) for more information
+
+### Configuration
 
 You can publish the config file with:
 
@@ -96,6 +99,7 @@ php artisan vendor:publish --tag="laravel-preference-config"
     ]
 ```
 
+> [!NOTE]
 > Consider changing the base table names before running the migrations, if needed
 
 Run the migrations with:
@@ -109,6 +113,7 @@ php artisan migrate
 ### Concepts
 
 Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
+> [!TIP]
 > The default caster supports all major primitives, enums, objects, as well as time/datetime/date and timestamp which
 > get converted with `Carbon/Carbon`
 
@@ -244,6 +249,7 @@ Signature:
 - $user the logged in user
 - PolicyAction enum: the action the user wants to perform index/get/update/delete
 
+> [!NOTE]
 > this is just the bare minimum regarding Authorization.  
 > For more fine-grained authorization checks refer to [Policies](#policies)
 
@@ -291,8 +297,11 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ## Casting
 
-> set the cast when creating a Preference
->> PreferenceBuilder::init(Preferences::LANGUAGE, Cast::STRING)
+set the cast when creating a Preference
+
+```php 
+PreferenceBuilder::init(Preferences::LANGUAGE, Cast::STRING)
+```
 
 ### Available Casts
 
@@ -318,7 +327,12 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ### Custom Caster
 
-create a **string backed** enum, and implement `CastableEnum`
+implement `CastableEnum`
+
+> [!IMPORTANT]
+> The custom caster needs to be a **string backed** enum
+
+#### Example:
 
 ```php
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -357,7 +371,9 @@ enum MyCast: string implements CastableEnum
 
 ## Custom Rules
 
-> rules need to implement `ValidationRule`
+implement `ValidationRule`
+
+#### Example:
 
 ```php
 class MyRule implements ValidationRule
@@ -433,7 +449,8 @@ implement `PreferencePolicy` and the 4 methods defined by the contract
 
 off by default, enable it in the config
 
-> Current limitation: it's not possible to set object casts via API
+> [!WARNING]
+> **(Current) limitation**: it's not possible to set object casts via API
 
 ### Anantomy:
 
@@ -458,7 +475,7 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
 `group`: A mapping of group names to their corresponding Enum classes. See config below   
 `scope`: A mapping of scope names to their corresponding Eloquent model. See config below
 
-### Example
+### Example:
 
 ```php
  'routes' => [
@@ -467,7 +484,7 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
             'auth',
             'user'=> 'verified'
         ],
-        'prefix' => 'my_preferences', 
+        'prefix' => 'custom_prefix', 
         'groups'      => [
             'general'=>\Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General::class
             'video'=>\Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences::class
@@ -478,81 +495,87 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
     ]
 ```
 
-will result in:
+will result in the following **route names**:
 
-- my_preferences.user.general.index
-- my_preferences.user.general.get
-- my_preferences.user.general.update
-- my_preferences.user.general.delete
-- my_preferences.user.video.index
-- my_preferences.user.video.get
-- my_preferences.user.video.update
-- my_preferences.user.video.delete
+- custom_prefix.user.general.index
+- custom_prefix.user.general.get
+- custom_prefix.user.general.update
+- custom_prefix.user.general.delete
+- custom_prefix.user.video.index
+- custom_prefix.user.video.get
+- custom_prefix.user.video.update
+- custom_prefix.user.video.delete
 
 ### Actions
 
+> [!NOTE]
+> Examples are with scope `user` and group `general`
+
+
 #### INDEX
 
-(my_preferences.user.general.index)   
-equivalent to:  `$user->getPreferences(General::class)`
 
-```shell
-curl -X GET 'https://example.com/my_preferences/user/{scope_id}/general' 
-```
+- Route Name: custom_prefix.user.general.index
+- Url params: `scope_id`
+- Equivalent to: `$user->getPreferences(General::class)`
+- Http method: GET
+- Endpoint: 'https://your.domain/custom_prefix/user/{scope_id}/general'
+
 
 #### GET
 
-(my_preferences.user.general.get)   
-equivalent to:  `$user->getPreference(General::{preference})`
-
-```shell
-curl -X GET 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' 
-```
+- Route Name: custom_prefix.user.general.get
+- Url params: `scope_id`,`preference`
+- Equivalent to: `$user->getPreference(General::{preference})`
+- Http method: GET
+- Endpoint: https://your.domain/custom_prefix/user/{scope_id}/general/{preference}
 
 #### UPDATE
 
-(my_preferences.user.general.update)   
-equivalent to:  `$user->setPreference(General::{preference}, >value<)`  
-Payload:
+- Route Name: custom_prefix.user.general.update   
+- Url params: `scope_id`,`preference`   
+- Equivalent to:  `$user->setPreference(General::{preference}, >value<)`  
+- Http method: PATCH/PUT
+- Endpoint: https://your.domain/custom_prefix/user/{scope_id}/general/{preference}
+- Payload:
+`
 {
-'value' => >value<
+  "value": >value<
 }
+`
 
-```shell
-curl -X PATCH 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' \
-    -d '{"value": "new_value"}'
-```
+
 
 ##### Enum Patching
 
 When creating your enum preference, add `setAllowedClasses` containing the possible enums to reconstruct the value
-> ! if multiple cases are shared between enums, the first match is taken !   
-> -> consider having only one enum per preference to avoid overlaps
+> [!CAUTION]
+> if multiple cases are shared between enums, the first match is taken   
 
 then, when sending the value it varies:
 
 - BackedEnum: send the value or the case
-- UnitBacked: send the case
+- UnitEnum: send the case
 
-Example: 
+Example:
+
 ```php
 enum Theme
 {
     case LIGHT;
     case DARK;
 }
-curl -X PATCH 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' \
+curl -X PATCH 'https://your.domain/custom_prefix/user/{scope_id}/general/{preference}' \
     -d '{"value": "DARK"}'
 ```
 
 #### DELETE
 
-(my_preferences.user.general.delete)   
-equivalent to:  `$user->removePreference(General::{preference})`
-
-```shell
-curl -X DELETE 'https://example.com/my_preferences/user/{scope_id}/general/{preference}' 
-```
+- Route Name: (custom_prefix.user.general.delete)
+- Url params: `scope_id`,`preference`
+- Equivalent to:  `$user->removePreference(General::{preference})`
+- Http method: DELETE
+- Endpoint: https://your.domain/custom_prefix/user/{scope_id}/general/{preference}
 
 ### Middlewares
 
@@ -567,9 +590,9 @@ in the config file
 'user.general'=> 'verified' // scoped & grouped middleware only for a specific model + enum
 ],
 ```
-
-**known Issues**: without the web middleware, you won't have access to the user via the Auth facade
-since it's set by the middleware. Looking into an alternative
+> [!CAUTION]
+> **known Issues**: without the web middleware, you won't have access to the user via the Auth facade
+> since it's set by the middleware. Looking into an alternative
 
 ## Security
 

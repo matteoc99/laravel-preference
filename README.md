@@ -590,9 +590,9 @@ in the config file
 'user.general'=> 'verified' // scoped & grouped middleware only for a specific model + enum
 ],
 ```
-
-**known Issues**: without the web middleware, you won't have access to the user via the Auth facade
-since it's set by the middleware. Looking into an alternative
+> [!CAUTION]
+> **known Issues**: without the web middleware, you won't have access to the user via the Auth facade
+> since it's set by the middleware. Looking into an alternative
 
 ## Security
 

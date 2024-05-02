@@ -3,14 +3,11 @@
 namespace Matteoc99\LaravelPreference\Tests\ApiTest;
 
 use Illuminate\Foundation\Application;
-use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
-use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Rules\InRule;
 use Matteoc99\LaravelPreference\Tests\TestCase;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
-use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
 class ApiTestCase extends TestCase

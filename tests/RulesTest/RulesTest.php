@@ -4,8 +4,13 @@ namespace Matteoc99\LaravelPreference\Tests\RulesTest;
 
 use Carbon\Carbon;
 use Matteoc99\LaravelPreference\Enums\Type;
+use Matteoc99\LaravelPreference\Rules\AndRule;
+use Matteoc99\LaravelPreference\Rules\BetweenRule;
+use Matteoc99\LaravelPreference\Rules\InRule;
 use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
 use Matteoc99\LaravelPreference\Rules\IsRule;
+use Matteoc99\LaravelPreference\Rules\LowerThanRule;
+use Matteoc99\LaravelPreference\Rules\OrRule;
 use Matteoc99\LaravelPreference\Tests\TestCase;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\PlainEnum;
@@ -48,7 +53,7 @@ class RulesTest extends TestCase
     /**
      * @dataProvider valueProvider
      */
-    public function testIsRuleValidation(Type $type, mixed $value, bool $expectedOutcome)
+    public function test_is_rule_validation(Type $type, mixed $value, bool $expectedOutcome)
     {
         $rule = new IsRule($type);
 
@@ -70,7 +75,7 @@ class RulesTest extends TestCase
     /**
      * @dataProvider instanceValueProvider
      */
-    public function testInstanceOfRuleValidation(string $class, mixed $value, bool $expectedOutcome)
+    public function test_instance_of_rule_validation(string $class, mixed $value, bool $expectedOutcome)
     {
         $rule = new InstanceOfRule($class);
 

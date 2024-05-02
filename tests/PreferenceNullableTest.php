@@ -6,8 +6,8 @@ use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
+use Matteoc99\LaravelPreference\Rules\LowerThanRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
-use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 
 class PreferenceNullableTest  extends TestCase
 {

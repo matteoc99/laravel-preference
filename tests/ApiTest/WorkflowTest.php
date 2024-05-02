@@ -5,6 +5,7 @@ namespace Matteoc99\LaravelPreference\Tests\ApiTest;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\BetweenRule;
+use Matteoc99\LaravelPreference\Rules\LowerThanRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPlainEnum;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
@@ -12,7 +13,6 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\PlainEnum;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\SomePreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\Theme;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
-use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 class WorkflowTest extends ApiTestCase

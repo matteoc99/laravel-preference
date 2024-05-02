@@ -6,10 +6,10 @@ use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
+use Matteoc99\LaravelPreference\Rules\LowerThanRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
-use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\LowerThanRule;
 
 class PreferenceBuilderBulkTest extends TestCase
 {

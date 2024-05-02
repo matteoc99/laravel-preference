@@ -21,12 +21,14 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 * [Casting](#casting)
     * [Available Casts](#available-casts)
     * [Custom Caster](#custom-caster)
-* [Custom Rules](#custom-rules)
+* [Rules](#rules)
+    * [Available Rules](#available-rules)
+    * [Custom Rules](#custom-rules)
 * [Policies](#policies)
 * [Preference Building](#preference-building)
 * [Routing](#routing)
     * [Anantomy](#anantomy)
-    * [Example](#example-)
+    * [Example](#config-example)
     * [Actions](#actions)
     * [Middlewares](#middlewares)
 * [Security](#security)
@@ -49,8 +51,12 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 ### Roadmap
 
 - Additional inbuilt Custom Rules -> v2.x
-- Allow array of preferenceBuilders in initBuk -> v2.1.1
+- Allow array of preferenceBuilders in initBuk -> v2.1.x
+- Readme restructuring -> v2.1.x
+- QoL Helpers functions (removeAll, quickInit, etc) -> v2.1.x
 - Event System -> v2.2
+- Api Response customization -> v2.3
+- Caching
 - Suggestions are welcome
 
 ## Installation
@@ -299,8 +305,16 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 set the cast when creating a Preference
 
+> [!NOTE]
+> a cast has 3 main jobs
+> - Basic validation
+> - Casting from and to the database
+> - Preparing Api Responses
+
+#### Example:
+
 ```php 
-PreferenceBuilder::init(Preferences::LANGUAGE, Cast::STRING)
+PreferenceBuilder::init(Preferences::LANGUAGE, Cast::ENUM)
 ```
 
 ### Available Casts
@@ -361,15 +375,49 @@ enum MyCast: string implements CastableEnum
         return match ($this) {
             self::TIMEZONE => (string)$value,
         };
+    }
+    
+   public function castToDto(mixed $value): array
+    {
+        return ['value' => $value];
     } 
 }
 
- PreferenceBuilder::init(Preferences::TIMEZONE,MyCast::TIMEZONE)
- //->...etc
-
+ PreferenceBuilder::init(Preferences::TIMEZONE, MyCast::TIMEZONE)->create();
 ```
 
-## Custom Rules
+## Rules
+
+Additional validation, which can be way more complex than provided by the Cast
+
+### Adding Rules
+
+````php
+     PreferenceBuilder::init(General::VOLUME, Cast::INT)
+        ->withRule(new LowerThanRule(5))
+        ->updateOrCreate()
+
+
+    PreferenceBuilder::initBulk([
+        'name' => General::VOLUME,
+        'cast' => Cast::INT
+        'rule' => new LowerThanRule(5)
+     ]);
+````
+
+### Available Rules
+
+| Rule           | Example                                                        | Description                                                                                                           |
+|----------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| AndRule        | `new AndRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))` | Expects `n` ValidationRule, ensures all pass                                                                          |
+| OrRule         | `new OrRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))`  | Expects `n` ValidationRule, ensures at least one passes                                                               |
+| BetweenRule    | `new BetweenRule(2.4, 5.5)`                                    | For INT and FLOAT, check that the value is between min and max                                                        |
+| InRule         | `new InRule("it","en","de")`                                   | Expects the value to be validated to be in that equal to one of the `n` params                                        |
+| InstanceOfRule | `new InstanceOfRule(Theme::class)`                             | For non primitive casts, checks the instance of the value's class to validate. Tip: goes along well with the `OrRule` |
+| IsRule         | `new IsRule(Type::ITERABLE)`                                   | Expects a `Matteoc99\LaravelPreference\Enums\Type` Enum. Checks e.g. if the value is iterable                         |
+| LowerThanRule  | `new LowerThanRule(5)`                                         | For INT and FLOAT, check that the value to be validated is less than the one passed in the constructor                |
+
+### Custom Rules
 
 implement `ValidationRule`
 
@@ -475,7 +523,7 @@ which can all be accessed via the route name: {prefix}.{scope}.{group}.{index/ge
 `group`: A mapping of group names to their corresponding Enum classes. See config below   
 `scope`: A mapping of scope names to their corresponding Eloquent model. See config below
 
-### Example:
+### Config Example:
 
 ```php
  'routes' => [
@@ -511,16 +559,13 @@ will result in the following **route names**:
 > [!NOTE]
 > Examples are with scope `user` and group `general`
 
-
 #### INDEX
-
 
 - Route Name: custom_prefix.user.general.index
 - Url params: `scope_id`
 - Equivalent to: `$user->getPreferences(General::class)`
 - Http method: GET
 - Endpoint: 'https://your.domain/custom_prefix/user/{scope_id}/general'
-
 
 #### GET
 
@@ -532,25 +577,23 @@ will result in the following **route names**:
 
 #### UPDATE
 
-- Route Name: custom_prefix.user.general.update   
-- Url params: `scope_id`,`preference`   
-- Equivalent to:  `$user->setPreference(General::{preference}, >value<)`  
+- Route Name: custom_prefix.user.general.update
+- Url params: `scope_id`,`preference`
+- Equivalent to:  `$user->setPreference(General::{preference}, >value<)`
 - Http method: PATCH/PUT
 - Endpoint: https://your.domain/custom_prefix/user/{scope_id}/general/{preference}
 - Payload:
-`
-{
+  `
+  {
   "value": >value<
-}
-`
-
-
+  }
+  `
 
 ##### Enum Patching
 
 When creating your enum preference, add `setAllowedClasses` containing the possible enums to reconstruct the value
 > [!CAUTION]
-> if multiple cases are shared between enums, the first match is taken   
+> if multiple cases are shared between enums, the first match is taken
 
 then, when sending the value it varies:
 
@@ -590,6 +633,7 @@ in the config file
 'user.general'=> 'verified' // scoped & grouped middleware only for a specific model + enum
 ],
 ```
+
 > [!CAUTION]
 > **known Issues**: without the web middleware, you won't have access to the user via the Auth facade
 > since it's set by the middleware. Looking into an alternative

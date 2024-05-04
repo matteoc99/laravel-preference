@@ -36,7 +36,7 @@ class PreferenceBuilder
      */
     public static function buildString(PreferenceGroup $name, string $default = null): void
     {
-        self::init($name)->nullable()->withDefaultValue(null)->create();
+        self::init($name)->nullable()->withDefaultValue($default)->create();
     }
 
     /**
@@ -58,7 +58,7 @@ class PreferenceBuilder
      */
     public static function buildArray(PreferenceGroup $name, array $default = null): void
     {
-        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue(null)->create();
+        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue($default)->create();
     }
 
 

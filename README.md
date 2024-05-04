@@ -16,6 +16,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
     * [Concepts](#concepts)
     * [Define your preferences](#define-your-preferences)
     * [Create a Preference](#create-a-preference)
+    * [Preference Building](#preference-building)
 * [Working with preferences](#working-with-preferences)
     * [Examples](#examples)
 * [Casting](#casting)
@@ -25,7 +26,6 @@ This Laravel package aims to store and manage user settings/preferences in a sim
     * [Available Rules](#available-rules)
     * [Custom Rules](#custom-rules)
 * [Policies](#policies)
-* [Preference Building](#preference-building)
 * [Routing](#routing)
     * [Anantomy](#anantomy)
     * [Example](#config-example)
@@ -118,14 +118,19 @@ php artisan migrate
 
 ### Concepts
 
-Each preference has at least a name and a caster. For additional validation you can add you custom Rule object
-> [!TIP]
-> The default caster supports all major primitives, enums, objects, as well as time/datetime/date and timestamp which
-> get converted with `Carbon/Carbon`
+Each preference has at least a name and a caster.
+Names are stored in one or more enums and are the unique identifier for that preference
+
+For additional validation you can add you custom Rule object.
+
+For additional security you can add Policies
 
 ### Define your preferences
 
 Organize them in one or more **string backed** enum.
+
+> [!NOTE]
+> while it does not need to be string backed, its way more developer friendly. Especially when interacting over the APi
 
 Each enum gets scoped and does not conflict with other enums with the same case
 
@@ -143,7 +148,7 @@ enum Preferences :string implements PreferenceGroup
 
 enum General :string implements PreferenceGroup
 {
-    case LANGUAGE="language";
+    case LANGUAGE="language"; 
     case THEME="theme";
 }
 ```
@@ -166,7 +171,7 @@ public function up(): void
     // Or
     PreferenceBuilder::init(Preferences::LANGUAGE)->create()
     // different enums with the same value do not conflict
-    PreferenceBuilder::init(OtherPreferences::LANGUAGE)->create()
+    PreferenceBuilder::init(General::LANGUAGE)->create()
     
     // update
     PreferenceBuilder::init(Preferences::LANGUAGE)
@@ -183,8 +188,6 @@ public function up(): void
         ->withDefaultValue(null)
         ->nullable()
         ->create()
-
-
 
 }
 
@@ -239,9 +242,43 @@ return new class extends Migration {
 
 ```
 
+## Preference Building
+
+<details>
+<summary>Check all methods available to build a Preference</summary>
+
+### Available Methods
+
+This table includes a complete list of all features available,
+when building a preference.
+
+| Single-Mode                         | Bulk-Mode (array-keys)                      | Constrains                                                                | Description                                                                                                                                                       |
+|-------------------------------------|---------------------------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| init(>name<,>cast<)                 | ```["name"=> >name<]```                     | \>name< = instanceof PreferenceGroup                                      | Unique identifier for the preference                                                                                                                              |
+| init(>name<,>cast<)                 | ```["cast"=> >cast<]```                     | \>cast< = instanceof CastableEnum                                         | Caster to translate the value between all different scenarios. Currently: Api-calls as well as saving to and retrieving fron the DB                               |
+| nullable(>nullable<)                | ```["nullable"=> >nullable<]```             | \>nullable< = bool                                                        | Whether the default value can be null and if the preference can be set to null                                                                                    |
+| withDefaultValue(>default_value<)   | ```["default_value"=> >default_value<]```   | \>default_value< = mixed, but must comply with the cast & validationRule  | Initial value for this preference                                                                                                                                 |
+| withDescription(>description<)      | ```["description"=> >description<]```       | \>description< = string                                                   | Legacy code from v1.x has no actual use as of now                                                                                                                 |
+| withPolicy(>policy<)                | ```["policy"=> >policy<]```                 | \>policy< = instanceof PreferencePolicy                                   | Authorize actions such as update/delete etc. on certain preferences.                                                                                              |
+| withRule(>rule<)                    | ```["rule"=> >rule<]```                     | \>rule< = instanceof ValidationRule                                       | Additional validation Rule, to validate values before setting them                                                                                                |
+| setAllowedClasses(>allowed_values<) | ```["allowed_values"=> >allowed_values<]``` | \>allowed_values< = array of string classes. For non Primitive Casts only | Current use-cases: <br/> - restrict classes of enum or object that can be set to this preference<br/> - reconstruct the original class when sending data via api. |
+
+### Available helper functions
+
+Optionally, pass the default value as a second parameter
+
+```php
+        // quickly build a nullable Array preference
+        PreferenceBuilder::buildArray(VideoPreferences::CONFIG);
+
+        PreferenceBuilder::buildString(VideoPreferences::LANGUAGE);
+```
+
+</details>
+
 ## Working with preferences
 
-two things are needed:
+Two things are needed:
 
 - `HasPreferences` trait to access the helper functions
 - `PreferenceableModel` Interface to have access to the implementation
@@ -249,7 +286,7 @@ two things are needed:
 
 #### isUserAuthorized
 
-guard function to validate if the currently logged in (if any) user has access to this model
+Guard function to validate if the currently logged in (if any) user has access to this model
 Signature:
 
 - $user the logged in user
@@ -303,7 +340,7 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 
 ## Casting
 
-set the cast when creating a Preference
+Set the cast when creating a Preference
 
 > [!NOTE]
 > a cast has 3 main jobs
@@ -341,7 +378,7 @@ PreferenceBuilder::init(Preferences::LANGUAGE, Cast::ENUM)
 
 ### Custom Caster
 
-implement `CastableEnum`
+Implement `CastableEnum`
 
 > [!IMPORTANT]
 > The custom caster needs to be a **string backed** enum
@@ -407,19 +444,20 @@ Additional validation, which can be way more complex than provided by the Cast
 
 ### Available Rules
 
-| Rule           | Example                                                        | Description                                                                                                           |
-|----------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| Rule           | Example                                                      | Description                                                                                                           |
+|----------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | AndRule        | `new AndRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))` | Expects `n` ValidationRule, ensures all pass                                                                          |
-| OrRule         | `new OrRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))`  | Expects `n` ValidationRule, ensures at least one passes                                                               |
-| BetweenRule    | `new BetweenRule(2.4, 5.5)`                                    | For INT and FLOAT, check that the value is between min and max                                                        |
-| InRule         | `new InRule("it","en","de")`                                   | Expects the value to be validated to be in that equal to one of the `n` params                                        |
-| InstanceOfRule | `new InstanceOfRule(Theme::class)`                             | For non primitive casts, checks the instance of the value's class to validate. Tip: goes along well with the `OrRule` |
-| IsRule         | `new IsRule(Type::ITERABLE)`                                   | Expects a `Matteoc99\LaravelPreference\Enums\Type` Enum. Checks e.g. if the value is iterable                         |
-| LowerThanRule  | `new LowerThanRule(5)`                                         | For INT and FLOAT, check that the value to be validated is less than the one passed in the constructor                |
+| OrRule         | `new OrRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))` | Expects `n` ValidationRule, ensures at least one passes                                                               |
+| LaravelRule    | `new LaravelRule("required\|numeric")`                       | Expects a string, containing a Laravel Validation Rule                                                                |
+| BetweenRule    | `new BetweenRule(2.4, 5.5)`                                  | For INT and FLOAT, check that the value is between min and max                                                        |
+| InRule         | `new InRule("it","en","de")`                                 | Expects the value to be validated to be in that equal to one of the `n` params                                        |
+| InstanceOfRule | `new InstanceOfRule(Theme::class)`                           | For non primitive casts, checks the instance of the value's class to validate. Tip: goes along well with the `OrRule` |
+| IsRule         | `new IsRule(Type::ITERABLE)`                                 | Expects a `Matteoc99\LaravelPreference\Enums\Type` Enum. Checks e.g. if the value is iterable                         |
+| LowerThanRule  | `new LowerThanRule(5)`                                       | For INT and FLOAT, check that the value to be validated is less than the one passed in the constructor                |
 
 ### Custom Rules
 
-implement `ValidationRule`
+Implement Laravel's `ValidationRule`
 
 #### Example:
 
@@ -453,11 +491,11 @@ class MyRule implements ValidationRule
 
 ## Policies
 
-each preference can have a Policy, should [isUserAuthorized](#isuserauthorized) not be enough for your usecase
+Each preference can have a Policy, should [isUserAuthorized](#isuserauthorized) not be enough for your usecase
 
 ### Creating policies
 
-implement `PreferencePolicy` and the 4 methods defined by the contract
+Implement `PreferencePolicy` and the 4 methods defined by the contract
 
 | parameter                   | description                                                |   
 |-----------------------------|------------------------------------------------------------|
@@ -480,22 +518,9 @@ implement `PreferencePolicy` and the 4 methods defined by the contract
 
 ````
 
-## Preference Building
-
-| Single-Mode                         | Bulk-Mode (array-keys)                      | Constrains                                                                | Description                                                                                                                                                       |
-|-------------------------------------|---------------------------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| init(>name<,>cast<)                 | ```["name"=> >name<]```                     | \>name< = instanceof PreferenceGroup                                      | Unique identifier for the preference                                                                                                                              |
-| init(>name<,>cast<)                 | ```["cast"=> >cast<]```                     | \>cast< = instanceof CastableEnum                                         | Caster to translate the value between all different scenarios. Currently: Api-calls as well as saving to and retrieving fron the DB                               |
-| nullable(>nullable<)                | ```["nullable"=> >nullable<]```             | \>nullable< = bool                                                        | Whether the default value can be null and if the preference can be set to null                                                                                    |
-| withDefaultValue(>default_value<)   | ```["default_value"=> >default_value<]```   | \>default_value< = mixed, but must comply with the cast & validationRule  | Initial value for this preference                                                                                                                                 |
-| withDescription(>description<)      | ```["description"=> >description<]```       | \>description< = string                                                   | Legacy code from v1.x has no actual use as of now                                                                                                                 |
-| withPolicy(>policy<)                | ```["policy"=> >policy<]```                 | \>policy< = instanceof PreferencePolicy                                   | Authorize actions such as update/delete etc. on certain preferences.                                                                                              |
-| withRule(>rule<)                    | ```["rule"=> >rule<]```                     | \>rule< = instanceof ValidationRule                                       | Additional validation Rule, to validate values before setting them                                                                                                |
-| setAllowedClasses(>allowed_values<) | ```["allowed_values"=> >allowed_values<]``` | \>allowed_values< = array of string classes. For non Primitive Casts only | Current use-cases: <br/> - restrict classes of enum or object that can be set to this preference<br/> - reconstruct the original class when sending data via api. |
-
 ## Routing
 
-off by default, enable it in the config
+Off by default, enable it in the config
 
 > [!WARNING]
 > **(Current) limitation**: it's not possible to set object casts via API
@@ -505,7 +530,7 @@ off by default, enable it in the config
 'Scope': the `PreferenceableModel` Model  
 'Group': the `PreferenceGroup` enum
 
-routes then get transformed to:
+Routes then get transformed to:
 
 | Action    | URI                                               | Description                                                 |   
 |-----------|---------------------------------------------------|-------------------------------------------------------------|

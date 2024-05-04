@@ -7,6 +7,7 @@ use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Rules\InRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
+use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\NumericPreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
@@ -111,6 +112,29 @@ class PreferenceBasicTest extends TestCase
 
         $this->assertEquals('144p', $this->testUser->getPreference(VideoPreferences::QUALITY));
 
+    }
+
+    /** @test */
+    public function test_numeric_backed_preferences()
+    {
+        PreferenceBuilder::buildArray(NumericPreferences::ONE);
+
+        PreferenceBuilder::buildString(NumericPreferences::TWO);
+
+        PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
+        PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
+        PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
+        PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
+        PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
+
+        $this->assertDatabaseCount((new Preference())->getTable(), 3);
+
+        $this->testUser->setPreference(NumericPreferences::TWO, "14");
+        $this->testUser->setPreference(NumericPreferences::ONE, ["test" => "value"]);
+
+        $this->assertEquals('14', $this->testUser->getPreference(NumericPreferences::TWO));
+
+        $this->assertEquals(["test" => "value"], $this->testUser->getPreference(NumericPreferences::ONE));
     }
 
 

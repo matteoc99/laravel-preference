@@ -44,6 +44,10 @@ class Preference extends BaseModel
         'allowed_values',
     ];
 
+    protected $attributes = [
+        'nullable' => false,
+    ];
+
     protected $casts = [
         'created_at'     => 'datetime',
         'updated_at'     => 'datetime',

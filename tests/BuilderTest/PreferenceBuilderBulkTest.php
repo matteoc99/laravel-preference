@@ -1,12 +1,13 @@
 <?php
 
-namespace Matteoc99\LaravelPreference\Tests;
+namespace Matteoc99\LaravelPreference\Tests\BuilderTest;
 
 use Illuminate\Validation\ValidationException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Rules\LowerThanRule;
+use Matteoc99\LaravelPreference\Tests\TestCase;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\OtherPreferences;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
@@ -68,7 +69,7 @@ class PreferenceBuilderBulkTest extends TestCase
         PreferenceBuilder::deleteBulk($deletePreferences);
 
         $this->assertDatabaseCount((new Preference())->getTable(), 1);
-        $this->assertDatabaseHas((new Preference())->getTable(), ['name' =>  VideoPreferences::LANGUAGE]);
+        $this->assertDatabaseHas((new Preference())->getTable(), ['name' => VideoPreferences::LANGUAGE]);
     }
 
     /** @test */
@@ -127,13 +128,14 @@ class PreferenceBuilderBulkTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
+
     /** @test */
 
     public function init_bulk_handles_deprecated_group()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => Cast::STRING,'group'=>"hi"],
-  ];
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'group' => "hi"],
+        ];
 
         $this->expectException(\InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
@@ -150,7 +152,7 @@ class PreferenceBuilderBulkTest extends TestCase
 
         PreferenceBuilder::initBulk($preferences);
         $this->assertDatabaseCount((new Preference())->getTable(), 2);
-        $this->assertEquals(true,$this->testUser->getPreference(General::LANGUAGE));
+        $this->assertEquals(true, $this->testUser->getPreference(General::LANGUAGE));
 
         PreferenceBuilder::deleteBulk($preferences);
         $this->assertDatabaseCount((new Preference())->getTable(), 0);

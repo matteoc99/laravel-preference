@@ -9,6 +9,8 @@ use Matteoc99\LaravelPreference\Casts\ValueCaster;
 use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Enums\Cast;
+use Matteoc99\LaravelPreference\Exceptions\InvalidStateException;
+use Matteoc99\LaravelPreference\Factory\builders\BaseBuilder;
 use Matteoc99\LaravelPreference\Factory\builders\ObjectPreferenceBuilder;
 use Matteoc99\LaravelPreference\Factory\builders\PrimitivePreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
@@ -28,6 +30,7 @@ class PreferenceBuilder
      *
      * @return void Creates the preference and commits it to the database.
      *
+     * @throws InvalidStateException
      * @example
      * ```
      * PreferenceBuilder::buildString(UserPreference::TEST, "default");
@@ -36,7 +39,7 @@ class PreferenceBuilder
      */
     public static function buildString(PreferenceGroup $name, string $default = null): void
     {
-        self::init($name)->nullable()->withDefaultValue(null)->create();
+        self::init($name)->nullable()->withDefaultValue($default)->create();
     }
 
     /**
@@ -49,6 +52,7 @@ class PreferenceBuilder
      *
      * @return void Creates the preference and commits it to the database.
      *
+     * @throws InvalidStateException
      * @example
      * ```
      * PreferenceBuilder::buildArray(new SettingsPreferenceGroup(), ["item1", "item2"]);
@@ -58,7 +62,7 @@ class PreferenceBuilder
      */
     public static function buildArray(PreferenceGroup $name, array $default = null): void
     {
-        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue(null)->create();
+        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue($default)->create();
     }
 
 
@@ -99,7 +103,7 @@ class PreferenceBuilder
      *
      * @param PreferenceGroup $name
      *
-     * @return int,
+     * @return int
      */
     public static function delete(PreferenceGroup $name): int
     {
@@ -148,7 +152,23 @@ class PreferenceBuilder
             throw new InvalidArgumentException("no preferences provided");
         }
 
-        foreach ($preferences as $index => &$preferenceData) {
+        $cleanPreferences = [];
+
+        foreach ($preferences as $index => $preferenceData) {
+
+            if ($preferenceData instanceof BaseBuilder) {
+                if ($preferenceData->isStateSet(BaseBuilder::STATE_CREATED)) {
+                    throw new InvalidStateException($preferenceData->getState()
+                        , "The State should not be Created at this point, as its initBulk responsibility");
+                }
+                if (!$preferenceData->isStateSet(BaseBuilder::STATE_NULLABLE_SET)) {
+                    $preferenceData->nullable($nullable);
+                }
+
+                $preferenceData->updateOrCreate();
+                continue;
+            }
+
             if (empty($preferenceData['cast'])) {
                 $preferenceData['cast'] = Cast::STRING;
             }
@@ -177,7 +197,7 @@ class PreferenceBuilder
             $preferenceData['cast'] = serialize($preferenceData['cast']);
 
             // Ensure Defaults
-            $preferenceData = array_merge([
+            $preferenceData     = array_merge([
                 'group'          => 'general',
                 'default_value'  => null,
                 'allowed_values' => null,
@@ -186,9 +206,10 @@ class PreferenceBuilder
                 'rule'           => null,
                 'nullable'       => false,
             ], $preferenceData);
+            $cleanPreferences[] = $preferenceData;
         }
 
-        Preference::upsert($preferences, ['name', 'group']);
+        Preference::upsert($cleanPreferences, ['name', 'group']);
     }
 
     /**
@@ -203,6 +224,7 @@ class PreferenceBuilder
      * @return int Returns the number of deleted preferences.
      *
      * @throws InvalidArgumentException if the preferences array is empty or if any preference lacks a required
+     * @throws InvalidStateException
      *                                  'name' field, or if the 'name' field does not implement PreferenceGroup.
      */
     public static function deleteBulk(array $preferences): int
@@ -213,6 +235,18 @@ class PreferenceBuilder
         $query = Preference::query();
 
         foreach ($preferences as $index => $preferenceData) {
+
+
+            if ($preferenceData instanceof BaseBuilder) {
+                if ($preferenceData->isStateSet(BaseBuilder::STATE_DELETED)) {
+                    throw new InvalidStateException($preferenceData->getState()
+                        , "The State should not be Deleted at this point, as its deleteBulk's responsibility");
+                }
+
+                $preferenceData->delete();
+                continue;
+            }
+
             if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
                 throw new InvalidArgumentException(
                     sprintf("index: #%s name is required and must implement PreferenceGroup", $index)

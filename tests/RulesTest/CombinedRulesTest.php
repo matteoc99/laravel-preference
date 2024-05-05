@@ -8,6 +8,7 @@ use Matteoc99\LaravelPreference\Rules\BetweenRule;
 use Matteoc99\LaravelPreference\Rules\InRule;
 use Matteoc99\LaravelPreference\Rules\InstanceOfRule;
 use Matteoc99\LaravelPreference\Rules\IsRule;
+use Matteoc99\LaravelPreference\Rules\LaravelRule;
 use Matteoc99\LaravelPreference\Rules\LowerThanRule;
 use Matteoc99\LaravelPreference\Rules\OrRule;
 use Matteoc99\LaravelPreference\Tests\TestCase;
@@ -43,7 +44,19 @@ class CombinedRulesTest extends TestCase
         ];
     }
 
+    public static function laravelRuleProvider(): array
+    {
+        return [
+            [new LaravelRule('required|email'), 'test@example.com', true, 'Expected LaravelRule to pass for valid email.'],
+            [new LaravelRule('required|numeric'), '123', true, 'Expected LaravelRule to pass for numeric value.'],
+            [new LaravelRule('required|numeric'), 'abc', false, 'Expected LaravelRule to fail for non-numeric value.'],
+            [new LaravelRule('required|in:foo,bar,baz'), 'foo', true, 'Expected LaravelRule to pass for value within given options.'],
+            [new LaravelRule('required|in:foo,bar,baz'), 'qux', false, 'Expected LaravelRule to fail for value not within given options.'],
+        ];
+    }
+
     /**
+     * @dataProvider laravelRuleProvider
      * @dataProvider orRuleProvider
      * @dataProvider andRuleProvider
      */

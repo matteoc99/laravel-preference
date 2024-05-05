@@ -31,6 +31,17 @@ interface PreferenceableModel
      */
     public function removePreference(PreferenceGroup $name): int;
 
+
+    /**
+     * Reset the model to its original state
+     * Remove all user's preferences.
+     *
+     *
+     * @return int Number of deleted records.
+     * @throws AuthorizationException
+     */
+    public function removeAllPreferences(): int;
+
     /**
      * Set a preference value, handling validation and persistence.
      *
@@ -54,7 +65,7 @@ interface PreferenceableModel
     public function getPreference(PreferenceGroup $name, mixed $default = null): mixed;
 
     /**
-     * Get a user's preference value or default if not set with no casting
+     * Get a user's preference value or default if not set, transformed for data transfer
      *
      * @param PreferenceGroup|Preference $preference
      * @param string|null                $default Default value if preference not set.

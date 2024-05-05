@@ -121,6 +121,22 @@ trait HasPreferences
     }
 
     /**
+     * Reset the model to its original state
+     * Remove all user's preferences.
+     *
+     *
+     * @return int Number of deleted records.
+     * @throws AuthorizationException
+     */
+    public function removeAllPreferences(): int
+    {
+        $this->authorize(PolicyAction::DELETE_ALL);
+
+        return $this->userPreferences()->delete();
+    }
+
+
+    /**
      * Get all preferences for a user, optionally filtered by group.
      *
      * @param string|null $group Group to filter preferences by.
@@ -140,6 +156,7 @@ trait HasPreferences
 
         return $query->get();
     }
+
 
     /**
      * Validate existence of a preference and retrieve it.

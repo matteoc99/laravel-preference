@@ -200,10 +200,7 @@ public function down(): void
 #### Bulk mode
 
 ```php
-use Illuminate\Database\Migrations\Migration;
-use Matteoc99\LaravelPreference\Enums\Cast;
-use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
-use Matteoc99\LaravelPreference\Rules\InRule;
+use Illuminate\Database\Migrations\Migration;use Matteoc99\LaravelPreference\Enums\Cast;use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;use Matteoc99\LaravelPreference\Rules\InRule;
 
 return new class extends Migration {
 
@@ -236,6 +233,10 @@ return new class extends Migration {
             ['name' => Preferences::CONFIGURATION, 
                 'nullable' => true // or nullable for only one configuration
             ],
+            // or an array of initialized single-mode builders
+            PreferenceBuilder::init(Preferences::LANGUAGE)->withRule(new InRule("en", "it", "de")), 
+            PreferenceBuilder::init(Preferences::THEME)->withRule(new InRule("light", "dark")) 
+            //mixing both in one array is also possible
        ];
     }
 };
@@ -336,6 +337,11 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
     $user->getPreferences(General::class)
     //or all
     $user->getPreferences(): Collection of UserPreferences
+
+
+    // removes all preferences set for tht user
+    $user->removeAllPreferences();
+    
 ```
 
 ## Casting

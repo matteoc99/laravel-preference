@@ -34,6 +34,7 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 * [Security](#security)
 * [Upgrade from v1](#upgrade-from-v1)
 * [Test](#test)
+* [Contributing](#contributing)
 * [Security Vulnerabilities](#security-vulnerabilities)
 * [Credits](#credits)
 * [License](#license)
@@ -50,14 +51,15 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 
 ### Roadmap
 
-- Additional inbuilt Custom Rules -> v2.x
-- Allow array of preferenceBuilders in initBuk -> v2.1.x
-- Readme restructuring -> v2.1.x
-- QoL Helpers functions (removeAll, quickInit, etc) -> v2.1.x
-- Event System -> v2.2
-- Api Response customization -> v2.3
+- Event System -> [#13](https://github.com/matteoc99/laravel-preference/issues/13)
+- Api Response customization -> [#14](https://github.com/matteoc99/laravel-preference/issues/14)
+- QoL Helpers functions
 - Caching
-- Suggestions are welcome
+- Blade Directives
+
+
+
+- Additional suggestions are welcome. (check out  [Contributing](#contributing))
 
 ## Installation
 

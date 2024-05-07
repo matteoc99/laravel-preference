@@ -27,7 +27,7 @@ class IsRule implements ValidationRule
             Type::RESOURCE => is_resource($value),
         };
 
-        if (!$isValid) {
+        if (! $isValid) {
             $fail(sprintf('The %s must be of type %s.', $attribute, $this->type->name));
         }
     }

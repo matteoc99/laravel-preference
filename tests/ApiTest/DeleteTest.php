@@ -8,7 +8,7 @@ class DeleteTest extends ApiTestCase
     public function test_delete_action()
     {
 
-        $response = $this->delete(route('preferences.user.general.delete', ['scope_id' => 1,'preference' => 'language']));
+        $response = $this->delete(route('preferences.user.general.delete', ['scope_id' => 1, 'preference' => 'language']));
 
         $response->assertStatus(200);
     }
@@ -19,6 +19,7 @@ class DeleteTest extends ApiTestCase
 
         $response->assertNotFound();
     }
+
     public function test_delete_invalid_permission()
     {
         $response = $this->delete(route('preferences.user.general.delete', ['scope_id' => 2, 'preference' => 'language']));
@@ -27,7 +28,6 @@ class DeleteTest extends ApiTestCase
     }
 
     /** @test */
-
     public function test_delete_invalid_pref()
     {
         $response = $this->delete(route('preferences.user.general.delete', ['scope_id' => 1, 'preference' => 'languageee']));

@@ -8,11 +8,10 @@ use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 class BaseModel extends Model
 {
-
     public function __construct(array $attributes = [])
     {
         $configConnection = ConfigHelper::getDbConnection();
-        if (empty($this->connection) && !empty($configConnection)) {
+        if (empty($this->connection) && ! empty($configConnection)) {
             $this->setConnection($configConnection);
         }
 
@@ -28,6 +27,4 @@ class BaseModel extends Model
     {
         return ConfigHelper::getDbTableName(get_class($this), parent::getTable());
     }
-
-
 }

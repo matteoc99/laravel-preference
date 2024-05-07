@@ -14,12 +14,10 @@ class IndexTest extends ApiTestCase
     }
 
     /** @test */
-
     public function test_index_invalid_scope()
     {
         $response = $this->get(route('preferences.user.general.index', ['scope_id' => 200]));
 
         $response->assertNotFound();
     }
-
 }

@@ -26,7 +26,7 @@ enum CustomCast: string implements CastableEnum
     public function castToString(mixed $value): string
     {
         return match ($this) {
-            self::TIMEZONE => (string)$value,
+            self::TIMEZONE => (string) $value,
         };
     }
 

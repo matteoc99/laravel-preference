@@ -13,14 +13,13 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
 class PreferenceBasicTest extends TestCase
 {
-
     public function setUp(): void
     {
         parent::setUp();
 
         PreferenceBuilder::init(General::LANGUAGE)
-            ->withDefaultValue("en")
-            ->withRule(new InRule("en", "it", "de"))
+            ->withDefaultValue('en')
+            ->withRule(new InRule('en', 'it', 'de'))
             ->create();
     }
 
@@ -30,7 +29,6 @@ class PreferenceBasicTest extends TestCase
 
         parent::tearDown();
     }
-
 
     /** @test */
     public function set_and_get_preference()
@@ -45,7 +43,7 @@ class PreferenceBasicTest extends TestCase
     /** @test */
     public function set_and_get_with_instance()
     {
-        /**@var Preference $preference * */
+        /** @var Preference $preference * */
         $preference = Preference::query()->where('name', General::LANGUAGE->value)->first();
         $this->testUser->setPreference($preference, 'it');
 
@@ -54,7 +52,6 @@ class PreferenceBasicTest extends TestCase
         $this->assertEquals('it', $result);
         $this->assertEquals($result, $this->testUser->getPreference($preference));
     }
-
 
     /** @test */
     public function remove_preference()
@@ -71,7 +68,6 @@ class PreferenceBasicTest extends TestCase
 
         $this->assertEquals('en', $preference);
     }
-
 
     /** @test */
     public function preference_validation_rule()
@@ -93,10 +89,10 @@ class PreferenceBasicTest extends TestCase
     public function init_and_delete()
     {
         PreferenceBuilder::init(VideoPreferences::QUALITY)
-            ->withDescription("video quality")
+            ->withDescription('video quality')
             ->create();
         PreferenceBuilder::init(OtherPreferences::QUALITY)
-            ->withDescription("video quality")
+            ->withDescription('video quality')
             ->create();
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
@@ -106,7 +102,7 @@ class PreferenceBasicTest extends TestCase
 
         $this->assertDatabaseCount((new Preference())->getTable(), 3);
 
-        $this->testUser->setPreference(VideoPreferences::QUALITY, "144p");
+        $this->testUser->setPreference(VideoPreferences::QUALITY, '144p');
 
         PreferenceBuilder::delete(OtherPreferences::QUALITY);
 
@@ -129,13 +125,11 @@ class PreferenceBasicTest extends TestCase
 
         $this->assertDatabaseCount((new Preference())->getTable(), 3);
 
-        $this->testUser->setPreference(NumericPreferences::TWO, "14");
-        $this->testUser->setPreference(NumericPreferences::ONE, ["test" => "value"]);
+        $this->testUser->setPreference(NumericPreferences::TWO, '14');
+        $this->testUser->setPreference(NumericPreferences::ONE, ['test' => 'value']);
 
         $this->assertEquals('14', $this->testUser->getPreference(NumericPreferences::TWO));
 
-        $this->assertEquals(["test" => "value"], $this->testUser->getPreference(NumericPreferences::ONE));
+        $this->assertEquals(['test' => 'value'], $this->testUser->getPreference(NumericPreferences::ONE));
     }
-
-
 }

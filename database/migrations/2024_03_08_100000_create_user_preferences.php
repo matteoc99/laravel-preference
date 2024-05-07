@@ -6,15 +6,15 @@ use Illuminate\Support\Facades\Schema;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 
-return new class extends Migration {
-
+return new class() extends Migration
+{
     public function up()
     {
 
-        $preferenceTable     = (new Preference())->getTable();
+        $preferenceTable = (new Preference())->getTable();
         $userPreferenceTable = (new UserPreference())->getTable();
 
-        if (!Schema::hasTable($preferenceTable)) {
+        if (! Schema::hasTable($preferenceTable)) {
             Schema::create($preferenceTable, function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('group')->default('general'); // find and organize preferences // group -> Collection<Preferences>
@@ -29,10 +29,10 @@ return new class extends Migration {
             });
         }
 
-        if (!Schema::hasTable($userPreferenceTable)) {
+        if (! Schema::hasTable($userPreferenceTable)) {
             Schema::create($userPreferenceTable, function (Blueprint $table) use ($preferenceTable) {
                 $table->bigIncrements('id');
-                $table->morphs('preferenceable','preference_preferenceable_index');
+                $table->morphs('preferenceable', 'preference_preferenceable_index');
                 $table->unsignedBigInteger('preference_id');
                 $table->text('value')->nullable();
                 $table->timestamps();
@@ -47,7 +47,7 @@ return new class extends Migration {
 
     public function down()
     {
-        $preferenceTable     = (new Preference())->getTable();
+        $preferenceTable = (new Preference())->getTable();
         $userPreferenceTable = (new UserPreference())->getTable();
 
         if (Schema::hasTable($userPreferenceTable)) {

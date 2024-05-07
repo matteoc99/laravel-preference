@@ -12,18 +12,17 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
 class ApiTestCase extends TestCase
 {
-
     public function setUp(): void
     {
         parent::setUp();
 
         PreferenceBuilder::init(General::LANGUAGE)->withRule(new InRule('it', 'en', 'de'))->create();
     }
+
     /**
      * Define environment setup.
      *
-     * @param Application $app
-     *
+     * @param  Application  $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
@@ -34,14 +33,13 @@ class ApiTestCase extends TestCase
         $app['config']->set('user_preference.routes.middlewares', [
 
         ]);
-        $app['config']->set('user_preference.routes.prefix', "preferences");
+        $app['config']->set('user_preference.routes.prefix', 'preferences');
         $app['config']->set('user_preference.routes.groups', [
             'general' => General::class,
-            'video'   => VideoPreferences::class,
+            'video' => VideoPreferences::class,
         ]);
         $app['config']->set('user_preference.routes.scopes', [
-            'user' => User::class
+            'user' => User::class,
         ]);
     }
-
 }

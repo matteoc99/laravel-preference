@@ -6,6 +6,6 @@ use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 
 enum SomePreferences: string implements PreferenceGroup
 {
-    case SOME_LANGUAGE = "somelanguage";
-    case SOME_CONFIG = "someconfig";
+    case SOME_LANGUAGE = 'somelanguage';
+    case SOME_CONFIG = 'someconfig';
 }

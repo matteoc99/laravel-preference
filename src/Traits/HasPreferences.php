@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Traits;
 
+use BackedEnum;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
@@ -16,14 +17,11 @@ use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
 use Matteoc99\LaravelPreference\Utils\SerializeHelper;
 use Matteoc99\LaravelPreference\Utils\ValidationHelper;
+use UnitEnum;
 
 trait HasPreferences
 {
-    /**
-     * Defines a polymorphic relationship to user preferences.
-     *
-     * @return MorphMany
-     */
+    /** Defines a polymorphic relationship to user preferences. */
     private function userPreferences(): MorphMany
     {
         return $this->morphMany(UserPreference::class, 'preferenceable');
@@ -32,22 +30,19 @@ trait HasPreferences
     /**
      * Get a user's preference value or default if not set.
      *
-     * @param PreferenceGroup|Preference $preference
-     * @param mixed|null                 $default Default value if preference not set.
+     * @param  mixed|null  $default  Default value if preference not set.
      *
-     * @return mixed
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
      */
     public function getPreference(PreferenceGroup|Preference $preference, mixed $default = null): mixed
     {
 
-
         $preference = $this->validateAndRetrievePreference($preference, PolicyAction::GET);
 
         $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
 
-        if (!empty($userPreference) && $preference->nullable) {
+        if (! empty($userPreference) && $preference->nullable) {
             return $userPreference->value;
         }
 
@@ -57,10 +52,8 @@ trait HasPreferences
     /**
      * Get a user's preference value or default if not set with no casting
      *
-     * @param PreferenceGroup|Preference $preference
-     * @param string|null                $default Default value if preference not set.
+     * @param  string|null  $default  Default value if preference not set.
      *
-     * @return array
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
      */
@@ -73,12 +66,10 @@ trait HasPreferences
         return $preference->cast ? $preference->cast->castToDto($value) : ['value' => json_encode($value)];
     }
 
-
     /**
      * Set or update a user's preference value.
      *
-     * @param PreferenceGroup|Preference $preference
-     * @param mixed                      $value Value to set for the preference.
+     * @param  mixed  $value  Value to set for the preference.
      *
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
@@ -105,9 +96,9 @@ trait HasPreferences
     /**
      * Remove a user's preference.
      *
-     * @param PreferenceGroup|Preference $preference
      *
      * @return int Number of deleted records.
+     *
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
      */
@@ -115,7 +106,6 @@ trait HasPreferences
     {
 
         $preference = $this->validateAndRetrievePreference($preference, PolicyAction::DELETE);
-
 
         return $this->userPreferences()->where('preference_id', $preference->id)->delete();
     }
@@ -126,6 +116,7 @@ trait HasPreferences
      *
      *
      * @return int Number of deleted records.
+     *
      * @throws AuthorizationException
      */
     public function removeAllPreferences(): int
@@ -135,36 +126,31 @@ trait HasPreferences
         return $this->userPreferences()->delete();
     }
 
-
     /**
      * Get all preferences for a user, optionally filtered by group.
      *
-     * @param string|null $group Group to filter preferences by.
+     * @param  string|null  $group  Group to filter preferences by.
      *
-     * @return Collection
      * @throws AuthorizationException
      */
-    public function getPreferences(string $group = null): Collection
+    public function getPreferences(?string $group = null): Collection
     {
         $this->authorize(PolicyAction::INDEX);
 
         $query = $this->userPreferences()->with('preference');
 
         if ($group) {
-            $query->whereHas('preference', fn($query) => $query->where('group', $group));
+            $query->whereHas('preference', fn ($query) => $query->where('group', $group));
         }
 
         return $query->get();
     }
 
-
     /**
      * Validate existence of a preference and retrieve it.
      *
-     * @param PreferenceGroup|Preference $preference Preference name.
-     * @param PolicyAction               $action
+     * @param  PreferenceGroup|Preference  $preference  Preference name.
      *
-     * @return Preference
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
      */
@@ -173,19 +159,19 @@ trait HasPreferences
 
         $this->authorize($action);
 
-        if (!$preference instanceof Preference) {
+        if (! $preference instanceof Preference) {
 
             SerializeHelper::conformNameAndGroup($preference, $group);
 
-            /**@var Preference $preference * */
+            /** @var Preference $preference * */
             $preference = Preference::where('group', $group)->where('name', $preference)->first();
         }
-        if (!$preference) {
+        if (! $preference) {
             throw new PreferenceNotFoundException("Preference not found: $preference in group $group");
         }
 
-        if (!empty($preference->policy)) {
-            $policy     = $preference->policy;
+        if (! empty($preference->policy)) {
+            $policy = $preference->policy;
             $authorized = false;
 
             $enum = SerializeHelper::reversePreferenceToEnum($preference);
@@ -196,12 +182,12 @@ trait HasPreferences
                     PolicyAction::GET => $policy->get(Auth::user(), $this, $enum),
                     PolicyAction::UPDATE => $policy->update(Auth::user(), $this, $enum),
                     PolicyAction::DELETE => $policy->delete(Auth::user(), $this, $enum),
-                    default => throw new AuthorizationException("Unknown Policy: " . $action->name),
+                    default => throw new AuthorizationException('Unknown Policy: '.$action->name),
                 };
             }
 
-            if (!$authorized) {
-                throw new AuthorizationException("The user is not authorized to perform the action: " . $action->name);
+            if (! $authorized) {
+                throw new AuthorizationException('The user is not authorized to perform the action: '.$action->name);
             }
 
         }
@@ -209,39 +195,35 @@ trait HasPreferences
         return $preference;
     }
 
-    /**
-     * @param PolicyAction $action
-     *
-     * @throws AuthorizationException
-     */
+    /** @throws AuthorizationException */
     private function authorize(PolicyAction $action): void
     {
-        if (!$this->isUserAuthorized(Auth::user(), $action)) {
-            throw new AuthorizationException("The user is not authorized to perform the action: " . $action->name);
+        if (! $this->isUserAuthorized(Auth::user(), $action)) {
+            throw new AuthorizationException('The user is not authorized to perform the action: '.$action->name);
         }
     }
 
     private function restoreOriginalValue(Preference $preference, mixed $value): mixed
     {
-        if (!empty($preference->allowed_values)) {
+        if (! empty($preference->allowed_values)) {
             foreach ($preference->allowed_values as $allowedClass) {
 
-                if (!is_string($value)) {
+                if (! is_string($value)) {
                     continue;
                 }
 
-                if (!class_exists($allowedClass)) {
+                if (! class_exists($allowedClass)) {
                     throw new InvalidArgumentException("Class $allowedClass does not exist.");
                 }
 
-                if (in_array(\BackedEnum::class, class_implements($allowedClass))) {
+                if (in_array(BackedEnum::class, class_implements($allowedClass))) {
                     $val = $allowedClass::tryFrom($value);
-                    if (!empty($val)) {
+                    if (! empty($val)) {
                         return $val;
                     }
                 }
 
-                if (in_array(\UnitEnum::class, class_implements($allowedClass))) {
+                if (in_array(UnitEnum::class, class_implements($allowedClass))) {
                     if (defined("$allowedClass::$value")) {
                         return constant("$allowedClass::$value");
                     }
@@ -249,6 +231,7 @@ trait HasPreferences
             }
 
         }
+
         return $value;
     }
 }

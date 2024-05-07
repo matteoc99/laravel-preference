@@ -4,7 +4,6 @@ namespace Matteoc99\LaravelPreference\Tests;
 
 class MigrationTest extends TestCase
 {
-
     /** @test */
     public function migration_rollback_works()
     {

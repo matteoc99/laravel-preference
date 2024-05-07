@@ -9,13 +9,11 @@ trait HasState
 {
     private int $state = 0;
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     protected function addState($state)
     {
         if ($this->isStateSet($state)) {
-            throw new InvalidStateException($this->getState(), "The model is already in the state: " . $this->getStateName($state));
+            throw new InvalidStateException($this->getState(), 'The model is already in the state: '.$this->getStateName($state));
         }
 
         $this->state |= $state;
@@ -26,13 +24,11 @@ trait HasState
         return ($this->state & $state) === $state;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     protected function removeState($state): void
     {
-        if (!$this->isStateSet($state)) {
-            throw new InvalidStateException($this->getState(), "The model is not in the state: " . $this->getStateName($state) . " and can not be removed. ");
+        if (! $this->isStateSet($state)) {
+            throw new InvalidStateException($this->getState(), 'The model is not in the state: '.$this->getStateName($state).' and can not be removed. ');
         }
         $this->state &= ~$state;
     }
@@ -40,7 +36,7 @@ trait HasState
     protected function getStateName($state): string
     {
         $reflection = new ReflectionClass($this);
-        $constants  = $reflection->getConstants();
+        $constants = $reflection->getConstants();
 
         foreach ($constants as $name => $value) {
             if ($state === $value) {
@@ -51,12 +47,8 @@ trait HasState
         return 'Unknown State';
     }
 
-    /**
-     * @return int
-     */
     public function getState(): int
     {
         return $this->state;
     }
-
 }

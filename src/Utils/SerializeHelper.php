@@ -12,20 +12,15 @@ class SerializeHelper
 {
     public static function enumToString(PreferenceGroup|string $value): string
     {
-        if (!$value instanceof PreferenceGroup) return $value;
+        if (! $value instanceof PreferenceGroup) {
+            return $value;
+        }
 
         return $value->value;
     }
 
-    /**
-     * splits a preference enum into name and group as string
-     *
-     * @param PreferenceGroup|string $name
-     * @param string|null            $group
-     *
-     * @return void
-     */
-    public static function conformNameAndGroup(PreferenceGroup|string &$name, string|null &$group): void
+    /** splits a preference enum into name and group as string */
+    public static function conformNameAndGroup(PreferenceGroup|string &$name, ?string &$group): void
     {
         //auto set group scope for enums
         if (empty($group)) {
@@ -39,24 +34,18 @@ class SerializeHelper
         $name = SerializeHelper::enumToString($name);
     }
 
-    /**
-     * inverse of the above, reconstructs the original enum
-     *
-     * @param Preference $preference
-     *
-     * @return PreferenceGroup
-     */
+    /** inverse of the above, reconstructs the original enum */
     public static function reversePreferenceToEnum(Preference $preference): PreferenceGroup
     {
 
         $enumClass = $preference->group;
         $enumValue = $preference->name;
 
-        if (!class_exists($enumClass)) {
+        if (! class_exists($enumClass)) {
             throw new InvalidArgumentException("Enum class $enumClass does not exist.");
         }
 
-        if (!in_array(BackedEnum::class, class_implements($enumClass))) {
+        if (! in_array(BackedEnum::class, class_implements($enumClass))) {
             throw new InvalidArgumentException("Enum class $enumClass must be a backed enum.");
         }
 

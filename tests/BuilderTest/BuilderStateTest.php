@@ -13,7 +13,6 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 
 class BuilderStateTest extends TestCase
 {
-
     /** @test */
     public function it_can_add_initial_state()
     {
@@ -28,25 +27,26 @@ class BuilderStateTest extends TestCase
     public function it_throws_exception_when_adding_same_state_twice()
     {
         $this->expectException(InvalidStateException::class);
+
         try {
 
-            PreferenceBuilder::init(General::LANGUAGE)->withDefaultValue("de")->withDefaultValue("en");
+            PreferenceBuilder::init(General::LANGUAGE)->withDefaultValue('de')->withDefaultValue('en');
         } catch (InvalidStateException $e) {
             $this->assertEquals(BaseBuilder::STATE_INITIALIZED
                 + BaseBuilder::STATE_NAME_SET
                 + BaseBuilder::STATE_CAST_SET
                 + BaseBuilder::STATE_DEFAULT_SET, $e->getState());
+
             throw $e;
         }
     }
-
 
     /** @test */
     public function it_properly_adds_name_and_cast_state()
     {
         $builder = PreferenceBuilder::init(General::LANGUAGE);
-        $builder->withDefaultValue("en");
-        $builder->withRule(new InRule("en", "it", "de"));
+        $builder->withDefaultValue('en');
+        $builder->withRule(new InRule('en', 'it', 'de'));
 
         $this->assertTrue($builder->isStateSet(BaseBuilder::STATE_DEFAULT_SET));
         $this->assertTrue($builder->isStateSet(BaseBuilder::STATE_RULE_SET));
@@ -65,7 +65,7 @@ class BuilderStateTest extends TestCase
     public function it_allows_adding_description_after_default_value()
     {
         $builder = PreferenceBuilder::init(General::LANGUAGE);
-        $builder->withDefaultValue("en")->withDescription("Default language setting");
+        $builder->withDefaultValue('en')->withDescription('Default language setting');
 
         $this->assertTrue($builder->isStateSet(BaseBuilder::STATE_DESCRIPTION_SET));
     }
@@ -74,9 +74,9 @@ class BuilderStateTest extends TestCase
     public function it_creates_preference_properly_with_all_required_states()
     {
         $builder = PreferenceBuilder::init(General::LANGUAGE)
-            ->withDefaultValue("en")
-            ->withRule(new InRule("en", "it", "de"))
-            ->withDescription("Language settings");
+            ->withDefaultValue('en')
+            ->withRule(new InRule('en', 'it', 'de'))
+            ->withDescription('Language settings');
 
         $preference = $builder->updateOrCreate();
         $this->assertInstanceOf(Preference::class, $preference);
@@ -87,8 +87,8 @@ class BuilderStateTest extends TestCase
     {
         $preferences = [
             ['name' => General::CONFIG, 'cast' => Cast::ARRAY],
-            PreferenceBuilder::init(General::LANGUAGE)->withRule(new InRule("en", "it", "de")),
-            PreferenceBuilder::init(General::THEME)->withRule(new InRule("light", "dark")),
+            PreferenceBuilder::init(General::LANGUAGE)->withRule(new InRule('en', 'it', 'de')),
+            PreferenceBuilder::init(General::THEME)->withRule(new InRule('light', 'dark')),
         ];
 
         PreferenceBuilder::initBulk($preferences);

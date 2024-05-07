@@ -19,21 +19,29 @@ abstract class BaseBuilder
 
     protected Preference $preference;
 
-    const STATE_INITIALIZED        = 1;
-    const STATE_CREATED            = 2;
-    const STATE_DELETED            = 4;
-    const STATE_NAME_SET           = 8;
-    const STATE_CAST_SET           = 16;
-    const STATE_POLICY_SET         = 32;
-    const STATE_RULE_SET           = 64;
-    const STATE_DEFAULT_SET        = 128;
-    const STATE_DESCRIPTION_SET    = 256;
-    const STATE_NULLABLE_SET       = 512;
-    const STATE_ALLOWED_VALUES_SET = 1024;
+    public const STATE_INITIALIZED = 1;
 
-    /**
-     * @throws InvalidStateException
-     */
+    public const STATE_CREATED = 2;
+
+    public const STATE_DELETED = 4;
+
+    public const STATE_NAME_SET = 8;
+
+    public const STATE_CAST_SET = 16;
+
+    public const STATE_POLICY_SET = 32;
+
+    public const STATE_RULE_SET = 64;
+
+    public const STATE_DEFAULT_SET = 128;
+
+    public const STATE_DESCRIPTION_SET = 256;
+
+    public const STATE_NULLABLE_SET = 512;
+
+    public const STATE_ALLOWED_VALUES_SET = 1024;
+
+    /** @throws InvalidStateException */
     public function __construct(PreferenceGroup $name, CastableEnum $cast)
     {
         $this->preference = new Preference();
@@ -43,109 +51,94 @@ abstract class BaseBuilder
         $this->withName($name)->withCast($cast);
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     private function withCast(CastableEnum $cast): static
     {
         $this->addState(self::STATE_CAST_SET);
         $this->preference->cast = $cast;
+
         return $this;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     private function withName(PreferenceGroup $name): static
     {
         $this->addState(self::STATE_NAME_SET);
 
         SerializeHelper::conformNameAndGroup($name, $group);
 
-        $this->preference->name  = $name;
+        $this->preference->name = $name;
         $this->preference->group = $group;
+
         return $this;
     }
 
-
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function withPolicy(PreferencePolicy $policy): static
     {
         $this->addState(self::STATE_POLICY_SET);
         $this->preference->policy = $policy;
+
         return $this;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function withDefaultValue(mixed $value): static
     {
         $this->addState(self::STATE_DEFAULT_SET);
 
         $this->preference->default_value = $value;
+
         return $this;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function withDescription(string $description): static
     {
         $this->addState(self::STATE_DESCRIPTION_SET);
 
         $this->preference->description = $description;
+
         return $this;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function withRule(ValidationRule $rule): static
     {
         $this->addState(self::STATE_RULE_SET);
 
         $this->preference->rule = $rule;
+
         return $this;
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function nullable(bool $nullable = true)
     {
         $this->addState(self::STATE_NULLABLE_SET);
 
         $this->preference->nullable = $nullable;
+
         return $this;
     }
 
-
-    /**
-     * @deprecated no reason to use this over updateOrCreate, will be removed in v3.x
-     */
+    /** @deprecated no reason to use this over updateOrCreate, will be removed in v3.x */
     public function create(): Preference
     {
         return $this->updateOrCreate();
 
     }
 
-    /**
-     * @throws InvalidStateException
-     */
+    /** @throws InvalidStateException */
     public function delete(): int
     {
 
-        if (!$this->isStateSet(self::STATE_INITIALIZED)
-            || !$this->isStateSet(self::STATE_NAME_SET)) {
-            throw new InvalidStateException($this->getState(), "Initialize the builder before deleting the preference");
+        if (! $this->isStateSet(self::STATE_INITIALIZED)
+            || ! $this->isStateSet(self::STATE_NAME_SET)) {
+            throw new InvalidStateException($this->getState(), 'Initialize the builder before deleting the preference');
         }
 
         $this->addState(self::STATE_DELETED);
-
-
 
         return Preference::query()
             ->where('group', $this->preference->group)
@@ -164,12 +157,11 @@ abstract class BaseBuilder
 
         ValidationHelper::validatePreference($this->preference);
 
-
         $this->preference = Preference::updateOrCreate(
             $this->preference->toArrayOnly(['name', 'group']),
             $this->preference->attributesToArray()
         );
+
         return $this->preference->fresh();
     }
-
 }

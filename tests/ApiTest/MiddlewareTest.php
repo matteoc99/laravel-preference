@@ -11,16 +11,14 @@ class MiddlewareTest extends ApiTestCase
     /**
      * Define environment setup.
      *
-     * @param Application $app
-     *
-     * @return void
+     * @param  Application  $app
      */
     protected function getEnvironmentSetUp($app): void
     {
         parent::getEnvironmentSetUp($app);
 
         $app['config']->set('user_preference.routes.middlewares', [
-            'user'         => DummyMiddleware::class,
+            'user' => DummyMiddleware::class,
             'user.general' => Dummy2Middleware::class,
         ]);
     }
@@ -67,5 +65,4 @@ class MiddlewareTest extends ApiTestCase
         $deleteResponse = $this->delete('/preferences/user/1/general/language');
         $deleteResponse->assertHeader('X-Dummy2-Middleware', 'Applied');
     }
-
 }

@@ -2,6 +2,7 @@
 
 namespace Matteoc99\LaravelPreference\Http\Controllers;
 
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -18,13 +19,13 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use ValueError;
 
 class PreferenceController extends Controller
 {
+    private PreferenceableModel $scope;
 
-    private PreferenceableModel    $scope;
     private PreferenceGroup|string $group;
-
 
     public function __construct(Request $request)
     {
@@ -34,7 +35,6 @@ class PreferenceController extends Controller
             $this->handleException($exception);
         }
     }
-
 
     public function index(Request $request): JsonResponse
     {
@@ -80,51 +80,46 @@ class PreferenceController extends Controller
         }
     }
 
-
     private function init(Request $request): void
     {
-        list('scope' => $scope, 'group' => $group) = $this->extractScopeAndGroup($request->route()->getName());
+        ['scope' => $scope, 'group' => $group] = $this->extractScopeAndGroup($request->route()->getName());
 
         $params = $request->route()->originalParameters();
 
-        $id         = $params['scope_id'] ?? null;
+        $id = $params['scope_id'] ?? null;
         $preference = $params['preference'] ?? null;
 
         if (empty($id)) {
-            throw new ConfigException("Scope ID is required.");
+            throw new ConfigException('Scope ID is required.');
         }
 
         $scopeClass = ConfigHelper::getScope($scope);
         $groupClass = ConfigHelper::getGroup($group);
 
-
         $this->validate($scopeClass, PreferenceableModel::class);
         $this->validate($groupClass, PreferenceGroup::class);
-
 
         $this->group = $groupClass;
         $this->scope = $scopeClass::findOrFail($id);
 
-        if (!empty($preference)) {
+        if (! empty($preference)) {
             try {
                 $this->group = $groupClass::from($preference);
-            } catch (\ValueError $e) {
+            } catch (ValueError $e) {
                 throw new PreferenceNotFoundException($e->getMessage());
             }
         }
     }
 
-    /**
-     * @throws ConfigException
-     */
+    /** @throws ConfigException */
     private function validate(string $className, string $interfaceName): void
     {
 
-        if (!class_exists($className)) {
+        if (! class_exists($className)) {
             throw new ConfigException("Class '$className' not found.");
         }
 
-        if (!in_array($interfaceName, class_implements($className))) {
+        if (! in_array($interfaceName, class_implements($className))) {
             throw new ConfigException("Class '$className' does not implement '$interfaceName'.");
         }
     }
@@ -133,11 +128,11 @@ class PreferenceController extends Controller
     {
         $prefix = ConfigHelper::getRoutePrefix();
 
-        $routeSegments = explode('.', Str::replaceStart($prefix, "", $routeName));
+        $routeSegments = explode('.', Str::replaceStart($prefix, '', $routeName));
 
         return [
             'scope' => $routeSegments[0],
-            'group' => $routeSegments[1]
+            'group' => $routeSegments[1],
         ];
     }
 
@@ -150,13 +145,11 @@ class PreferenceController extends Controller
         return response()->json($this->scope->getPreferenceDto($this->group));
     }
 
-    /**
-     * @throws Throwable
-     */
-    private function handleException(Throwable|\Exception $exception)
+    /** @throws Throwable */
+    private function handleException(Throwable|Exception $exception)
     {
         match ($exception::class) {
-            ConfigException::class => throw new BadRequestHttpException("Invalid configuration", $exception),
+            ConfigException::class => throw new BadRequestHttpException('Invalid configuration', $exception),
             ModelNotFoundException::class, PreferenceNotFoundException::class => throw new NotFoundHttpException($exception->getMessage(), $exception),
             AuthorizationException::class => throw new HttpException(403, $exception->getMessage(), $exception),
             default => throw $exception, // Now this throw handles any other type of exception

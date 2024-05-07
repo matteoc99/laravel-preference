@@ -4,7 +4,6 @@ namespace Matteoc99\LaravelPreference\Enums;
 
 enum Type
 {
-
     case BOOL;
     case INT;
     case FLOAT;

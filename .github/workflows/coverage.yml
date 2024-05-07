@@ -3,6 +3,8 @@ name: Coverage
 on:
   push:
     branches: ['main']
+  pull_request:
+    branches: ['main']
 
 jobs:
   test:
@@ -29,3 +31,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: matteoc99/laravel-preference
           files: ./reports/coverage/coverage.xml
+      - name: Running Pint
+        run: composer pint-test

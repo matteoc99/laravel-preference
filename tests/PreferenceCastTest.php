@@ -13,7 +13,6 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\CustomCast;
 
 class PreferenceCastTest extends TestCase
 {
-
     public function setUp(): void
     {
         parent::setUp();
@@ -90,8 +89,6 @@ class PreferenceCastTest extends TestCase
         $this->testUser->setPreference(General::OPTIONS, null);
         $this->testUser->setPreference(General::BIRTHDAY, null);
 
-
-
         $preference = $this->testUser->getPreference(General::OPTIONS);
         $this->assertEquals(null, $preference);
 
@@ -110,18 +107,16 @@ class PreferenceCastTest extends TestCase
         $this->assertEquals('Europe/Berlin', $preference);
 
         $this->expectException(ValidationException::class);
-        $this->testUser->setPreference(General::TIMEZONE, "France");
+        $this->testUser->setPreference(General::TIMEZONE, 'France');
     }
 
     /** @test */
     public function user_can_set_and_get_preference_with_enum_cast()
     {
 
-
         $this->testUser->setPreference(General::OPTIONS, OtherPreferences::CONFIG);
         $preference = $this->testUser->getPreference(General::OPTIONS);
         $this->assertEquals(OtherPreferences::CONFIG, $preference);
-
 
         $this->expectException(ValidationException::class);
         $this->testUser->setPreference(General::OPTIONS, 'Europe/Berlin');

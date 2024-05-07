@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference\Tests;
 
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
@@ -14,7 +15,7 @@ class AllowedClassesTest extends TestCase
     /** @test */
     public function init_throws_exception_for_invalid_enum_class()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::init(General::CONFIG, Cast::ENUM)
             ->setAllowedClasses('InvalidEnumClass')
             ->create();
@@ -86,7 +87,7 @@ class AllowedClassesTest extends TestCase
             ['name' => General::CONFIG, 'cast' => Cast::ENUM, 'allowed_values' => ['InvalidEnumClass']],
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
 

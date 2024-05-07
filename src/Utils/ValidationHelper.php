@@ -15,16 +15,8 @@ use Matteoc99\LaravelPreference\Rules\OrRule;
 
 class ValidationHelper
 {
-
-    /**
-     * @param mixed               $value
-     * @param CastableEnum|null   $cast
-     * @param ValidationRule|null $rule
-     * @param bool                $nullable
-     *
-     * @throws ValidationException
-     */
-    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, array|null $allowed_classes = []): void
+    /** @throws ValidationException */
+    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): void
     {
         $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable, $allowed_classes)]);
 
@@ -33,57 +25,49 @@ class ValidationHelper
         }
     }
 
-    /**
-     * @param Preference $preference
-     *
-     * @throws ValidationException
-     */
+    /** @throws ValidationException */
     public static function validatePreference(Preference $preference): void
     {
         if (isset($preference->default_value)) {
             self::validateValue(
                 $preference->default_value,
-                $preference->cast, $preference->rule,
+                $preference->cast,
+                $preference->rule,
                 $preference->nullable,
                 $preference->allowed_values
             );
         }
     }
 
-    /**
-     * @param array $preferenceData
-     * @param int   $index
-     *
-     * @throws ValidationException
-     */
+    /** @throws ValidationException */
     public static function validatePreferenceData(array $preferenceData, int $index): void
     {
-        if (empty($preferenceData['name']) || !($preferenceData['name'] instanceof PreferenceGroup)) {
+        if (empty($preferenceData['name']) || ! ($preferenceData['name'] instanceof PreferenceGroup)) {
             throw new InvalidArgumentException(
-                sprintf("index: #%s name is required and needs to be a PreferenceGroup", $index)
+                sprintf('index: #%s name is required and needs to be a PreferenceGroup', $index)
             );
         }
-        if (empty($preferenceData['cast']) || !($preferenceData['cast'] instanceof CastableEnum)) {
+        if (empty($preferenceData['cast']) || ! ($preferenceData['cast'] instanceof CastableEnum)) {
             throw new InvalidArgumentException(
                 sprintf("index: #%s cast is required and needs to implement 'CastableEnum'", $index)
             );
         }
-        if (!empty($preferenceData['rule']) && !$preferenceData['rule'] instanceof ValidationRule) {
+        if (! empty($preferenceData['rule']) && ! $preferenceData['rule'] instanceof ValidationRule) {
             throw new InvalidArgumentException(
-                sprintf("index: #%s validation rule musst implement ValidationRule", $index)
+                sprintf('index: #%s validation rule musst implement ValidationRule', $index)
             );
         }
-        if (!empty($preferenceData['policy']) && !$preferenceData['policy'] instanceof PreferencePolicy) {
+        if (! empty($preferenceData['policy']) && ! $preferenceData['policy'] instanceof PreferencePolicy) {
             throw new InvalidArgumentException(
-                sprintf("index: #%s policy musst implement PreferencePolicy", $index)
+                sprintf('index: #%s policy musst implement PreferencePolicy', $index)
             );
         }
 
-        if (!empty($preferenceData['allowed_values'])) {
+        if (! empty($preferenceData['allowed_values'])) {
             self::validateAllowedClasses($preferenceData['cast'], $preferenceData['allowed_values']);
         }
 
-        if (!empty($preferenceData['default_value'])) {
+        if (! empty($preferenceData['default_value'])) {
             ValidationHelper::validateValue(
                 $preferenceData['default_value'],
                 $preferenceData['cast'],
@@ -93,21 +77,20 @@ class ValidationHelper
             );
         }
 
-
         if (array_key_exists('group', $preferenceData)) {
             throw new InvalidArgumentException(
-                sprintf("index: #%s group has been deprecated", $index)
+                sprintf('index: #%s group has been deprecated', $index)
             );
         }
     }
 
-    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, array|null $allowed_classes = []): array
+    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): array
     {
         $rules = [];
         if ($nullable) {
-            $rules[] = "nullable";
+            $rules[] = 'nullable';
         }
-        if (!empty($allowed_classes)) {
+        if (! empty($allowed_classes)) {
             $instance_rules = [];
             foreach ($allowed_classes as $class) {
                 $instance_rules[] = new InstanceOfRule($class);
@@ -140,29 +123,21 @@ class ValidationHelper
         }
     }
 
-    /**
-     * @param CastableEnum|null $cast
-     * @param array             $classes
-     *
-     * @return void
-     */
     public static function validateAllowedClasses(?CastableEnum $cast, array $classes): void
     {
-        if (empty($cast) || !($cast instanceof CastableEnum)) {
+        if (empty($cast) || ! ($cast instanceof CastableEnum)) {
             throw new InvalidArgumentException(
                 sprintf("Cast is required and needs to implement 'CastableEnum'")
             );
         }
         if ($cast->isPrimitive()) {
-            throw new InvalidArgumentException("Allowed classes are not supported for primitive casts");
+            throw new InvalidArgumentException('Allowed classes are not supported for primitive casts');
         }
 
         foreach ($classes as $class) {
-            if (!is_string($class) || !class_exists($class)) {
-                throw new InvalidArgumentException("All allowed classes must be strings and they must exist.");
+            if (! is_string($class) || ! class_exists($class)) {
+                throw new InvalidArgumentException('All allowed classes must be strings and they must exist.');
             }
         }
     }
-
-
 }

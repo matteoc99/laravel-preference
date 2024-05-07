@@ -11,11 +11,10 @@ class User extends \Illuminate\Foundation\Auth\User implements PreferenceableMod
 {
     use HasPreferences;
 
-    protected $fillable = ['email', "admin"];
+    protected $fillable = ['email', 'admin'];
 
     public function isUserAuthorized(?Authenticatable $user, PolicyAction $action): bool
     {
         return $user?->id == $this->id;
     }
-
 }

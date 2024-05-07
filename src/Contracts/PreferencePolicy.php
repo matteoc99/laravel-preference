@@ -3,7 +3,6 @@
 namespace Matteoc99\LaravelPreference\Contracts;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use Matteoc99\LaravelPreference\Models\Preference;
 
 interface PreferencePolicy
 {

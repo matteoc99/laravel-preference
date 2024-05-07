@@ -17,18 +17,15 @@ class MyPolicy implements PreferencePolicy
         return $this->isAuthorized($user, $model);
     }
 
-
     public function get(?Authenticatable $user, PreferenceableModel $model, PreferenceGroup $preference): bool
     {
         return $this->isAuthorized($user, $model);
     }
 
-
     public function update(?Authenticatable $user, PreferenceableModel $model, PreferenceGroup $preference): bool
     {
         return $this->isAuthorized($user, $model);
     }
-
 
     public function delete(?Authenticatable $user, PreferenceableModel $model, PreferenceGroup $preference): bool
     {
@@ -38,7 +35,7 @@ class MyPolicy implements PreferencePolicy
     protected function isAuthorized(?Authenticatable $user, PreferenceableModel $model): bool
     {
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

@@ -6,7 +6,7 @@ use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 
 enum VideoPreferences: string implements PreferenceGroup
 {
-    case LANGUAGE = "language";
-    case QUALITY = "quality";
-    case CONFIG = "config";
+    case LANGUAGE = 'language';
+    case QUALITY = 'quality';
+    case CONFIG = 'config';
 }

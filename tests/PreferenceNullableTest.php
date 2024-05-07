@@ -9,7 +9,7 @@ use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Rules\LowerThanRule;
 use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 
-class PreferenceNullableTest  extends TestCase
+class PreferenceNullableTest extends TestCase
 {
     /** @test */
     public function preference_can_be_nullable()
@@ -26,7 +26,7 @@ class PreferenceNullableTest  extends TestCase
     public function preference_nullable_set_through_array()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), "nullable" => true]
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'nullable' => true],
         ];
 
         PreferenceBuilder::initBulk($preferences);
@@ -50,7 +50,7 @@ class PreferenceNullableTest  extends TestCase
     public function preference_nullable_set_through_bulk_default()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'default_value' => 'English']
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'default_value' => 'English'],
         ];
 
         PreferenceBuilder::initBulk($preferences, true);
@@ -73,7 +73,7 @@ class PreferenceNullableTest  extends TestCase
     {
         $preferences = [
             ['name' => General::CONFIG, 'cast' => Cast::STRING, 'nullable' => false],
-            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'nullable' => true]
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'nullable' => true],
         ];
 
         PreferenceBuilder::initBulk($preferences);
@@ -89,7 +89,7 @@ class PreferenceNullableTest  extends TestCase
     public function bulk_nullable_default_applies_correctly()
     {
         $preferences = [
-            ['name' => General::OPTIONS, 'cast' => Cast::BACKED_ENUM, 'default_value' => General::LANGUAGE]
+            ['name' => General::OPTIONS, 'cast' => Cast::BACKED_ENUM, 'default_value' => General::LANGUAGE],
         ];
 
         PreferenceBuilder::initBulk($preferences, true);
@@ -97,7 +97,6 @@ class PreferenceNullableTest  extends TestCase
         $this->testUser->setPreference(General::OPTIONS, null);
         $this->assertNull($this->testUser->getPreference(General::OPTIONS));
     }
-
 
     /** @test */
     public function it_handles_nullable_with_default_value()
@@ -116,8 +115,7 @@ class PreferenceNullableTest  extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk([
-            ['name' => 'InvalidType', 'cast' => Cast::STRING]
+            ['name' => 'InvalidType', 'cast' => Cast::STRING],
         ]);
     }
-
 }

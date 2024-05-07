@@ -1,6 +1,7 @@
 <?php
 
 namespace Matteoc99\LaravelPreference\Tests\TestSubjects\Middlewares;
+
 use Closure;
 use Illuminate\Http\Request;
 

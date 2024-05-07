@@ -2,7 +2,8 @@
 
 namespace Matteoc99\LaravelPreference\Exceptions;
 
-class ConfigException extends \Exception
-{
+use Exception;
 
+class ConfigException extends Exception
+{
 }

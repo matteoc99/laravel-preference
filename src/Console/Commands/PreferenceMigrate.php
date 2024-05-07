@@ -26,7 +26,6 @@ class PreferenceMigrate extends Command
         parent::__construct();
     }
 
-
     public function handle()
     {
         $version_from = ApplicationVersion::from($this->choice(

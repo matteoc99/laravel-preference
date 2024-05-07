@@ -12,25 +12,16 @@ use Matteoc99\LaravelPreference\Models\Preference;
 
 interface PreferenceableModel
 {
-    /**
-     * Retrieve all preferences for the current user, optionally filtered by group.
-     *
-     * @param string|null $group
-     *
-     * @return Collection
-     */
-    public function getPreferences(string $group = null): Collection;
+    /** Retrieve all preferences for the current user, optionally filtered by group. */
+    public function getPreferences(?string $group = null): Collection;
 
     /**
      * Remove a preference for the current user.
      *
-     * @param PreferenceGroup $name
      *
-     * @return int
      * @throws PreferenceNotFoundException
      */
     public function removePreference(PreferenceGroup $name): int;
-
 
     /**
      * Reset the model to its original state
@@ -38,6 +29,7 @@ interface PreferenceableModel
      *
      *
      * @return int Number of deleted records.
+     *
      * @throws AuthorizationException
      */
     public function removeAllPreferences(): int;
@@ -45,8 +37,6 @@ interface PreferenceableModel
     /**
      * Set a preference value, handling validation and persistence.
      *
-     * @param PreferenceGroup $name
-     * @param mixed           $value
      *
      * @throws ValidationException
      * @throws PreferenceNotFoundException
@@ -56,10 +46,7 @@ interface PreferenceableModel
     /**
      * Retrieve a preference value, prioritizing user settings, then defaults.
      *
-     * @param PreferenceGroup $name
-     * @param mixed|null      $default
      *
-     * @return mixed
      * @throws PreferenceNotFoundException
      */
     public function getPreference(PreferenceGroup $name, mixed $default = null): mixed;
@@ -67,23 +54,13 @@ interface PreferenceableModel
     /**
      * Get a user's preference value or default if not set, transformed for data transfer
      *
-     * @param PreferenceGroup|Preference $preference
-     * @param string|null                $default Default value if preference not set.
+     * @param  string|null  $default  Default value if preference not set.
      *
-     * @return array
      * @throws AuthorizationException
      * @throws PreferenceNotFoundException
      */
     public function getPreferenceDto(PreferenceGroup|Preference $preference, mixed $default = null): array;
 
-    /**
-     * check if the user is authorized
-     *
-     * @param Authenticatable|null $user
-     * @param PolicyAction         $action
-     *
-     * @return bool
-     */
+    /** check if the user is authorized */
     public function isUserAuthorized(?Authenticatable $user, PolicyAction $action): bool;
-
 }

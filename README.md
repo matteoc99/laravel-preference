@@ -450,16 +450,16 @@ Additional validation, which can be way more complex than provided by the Cast
 
 ### Available Rules
 
-| Rule           | Example                                                      | Description                                                                                                           |
-|----------------|--------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| Rule           | Example                                                        | Description                                                                                                           |
+|----------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | AndRule        | `new AndRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))` | Expects `n` ValidationRule, ensures all pass                                                                          |
-| OrRule         | `new OrRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))` | Expects `n` ValidationRule, ensures at least one passes                                                               |
-| LaravelRule    | `new LaravelRule("required\|numeric")`                       | Expects a string, containing a Laravel Validation Rule                                                                |
-| BetweenRule    | `new BetweenRule(2.4, 5.5)`                                  | For INT and FLOAT, check that the value is between min and max                                                        |
-| InRule         | `new InRule("it","en","de")`                                 | Expects the value to be validated to be in that equal to one of the `n` params                                        |
-| InstanceOfRule | `new InstanceOfRule(Theme::class)`                           | For non primitive casts, checks the instance of the value's class to validate. Tip: goes along well with the `OrRule` |
-| IsRule         | `new IsRule(Type::ITERABLE)`                                 | Expects a `Matteoc99\LaravelPreference\Enums\Type` Enum. Checks e.g. if the value is iterable                         |
-| LowerThanRule  | `new LowerThanRule(5)`                                       | For INT and FLOAT, check that the value to be validated is less than the one passed in the constructor                |
+| OrRule         | `new OrRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5))`  | Expects `n` ValidationRule, ensures at least one passes                                                               |
+| LaravelRule    | `new LaravelRule("required\|numeric")`                         | Expects a string, containing a Laravel Validation Rule                                                                |
+| BetweenRule    | `new BetweenRule(2.4, 5.5)`                                    | For INT and FLOAT, check that the value is between min and max                                                        |
+| InRule         | `new InRule("it","en","de")`                                   | Expects the value to be validated to be in that equal to one of the `n` params                                        |
+| InstanceOfRule | `new InstanceOfRule(Theme::class)`                             | For non primitive casts, checks the instance of the value's class to validate. Tip: goes along well with the `OrRule` |
+| IsRule         | `new IsRule(Type::ITERABLE)`                                   | Expects a `Matteoc99\LaravelPreference\Enums\Type` Enum. Checks e.g. if the value is iterable                         |
+| LowerThanRule  | `new LowerThanRule(5)`                                         | For INT and FLOAT, check that the value to be validated is less than the one passed in the constructor                |
 
 ### Custom Rules
 
@@ -705,6 +705,10 @@ install it via [gh](https://nektosact.com/installation/gh.html)
 
 then run: `composer pipeline`
 
+## Contributing
+
+See [Contributing](CONTRIBUTING.md) for details.
+
 ## Security Vulnerabilities
 
 Please review [our security policy](SECURITY.md) on how to report security vulnerabilities.
@@ -722,7 +726,7 @@ The MIT License (MIT). Please check the [License File](LICENSE) for more informa
 
 ## Support target
 
-| Package Version | Laravel Version |
-|-----------------|-----------------|
-| 1.x             | 10              |
-| 2.x             | 10 & 11         |
+| Package Version | Laravel Version | Maintained |
+|-----------------|-----------------|------------|
+| 1.x             | 10              | ❌          |
+| 2.x             | 10 & 11         | ✅          |

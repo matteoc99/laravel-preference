@@ -14,6 +14,6 @@ class SerializingCaster
 
     public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
-        return  empty($value) ? $value :serialize($value);
+        return empty($value) ? $value : serialize($value);
     }
 }

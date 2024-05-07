@@ -7,7 +7,9 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class LowerThanRule implements ValidationRule
 {
-    public function __construct(protected float $value) { }
+    public function __construct(protected float $value)
+    {
+    }
 
     public function message()
     {
@@ -16,7 +18,7 @@ class LowerThanRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!(is_int($value) || is_float($value)) || $value > $this->value) {
+        if (! (is_int($value) || is_float($value)) || $value > $this->value) {
             $fail($this->message());
         }
     }

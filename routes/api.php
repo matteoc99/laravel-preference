@@ -12,16 +12,16 @@ Route::group(['middleware' => ConfigHelper::getGlobalMiddlewares(), 'prefix' => 
     foreach ($scopes as $scope) {
         Route::group(['middleware' => ConfigHelper::getScopedMiddlewares($scope), 'prefix' => $scope], function () use ($scope, $groups) {
             foreach ($groups as $group) {
-                $name = sprintf("%s%s.%s", ConfigHelper::getRoutePrefix(), $scope, $group);
+                $name = sprintf('%s%s.%s', ConfigHelper::getRoutePrefix(), $scope, $group);
                 Route::group(['middleware' => ConfigHelper::getScopeGroupedMiddlewares($scope, $group)], function () use ($name, $group) {
                     Route::get("{scope_id}/$group", [PreferenceController::class, 'index'])
-                        ->name($name . ".index");
+                        ->name($name.'.index');
                     Route::get("{scope_id}/$group/{preference}", [PreferenceController::class, 'get'])
-                        ->name($name . ".get");
+                        ->name($name.'.get');
                     Route::match(['PUT', 'PATCH'], "{scope_id}/$group/{preference}", [PreferenceController::class, 'update'])
-                        ->name($name . ".update");
+                        ->name($name.'.update');
                     Route::delete("{scope_id}/$group/{preference}", [PreferenceController::class, 'delete'])
-                        ->name($name . ".delete");
+                        ->name($name.'.delete');
                 });
             }
         });

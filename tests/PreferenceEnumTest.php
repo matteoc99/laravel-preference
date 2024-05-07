@@ -10,8 +10,6 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
 class PreferenceEnumTest extends TestCase
 {
-
-
     /** @test */
     public function create_enum_preferences()
     {
@@ -61,7 +59,7 @@ class PreferenceEnumTest extends TestCase
 
         $deletePreferences = [
             ['name' => General::LANGUAGE],
-            ['name' => General::CONFIG]
+            ['name' => General::CONFIG],
         ];
         $this->testUser->setPreference(General::LANGUAGE, 'de');
 
@@ -73,11 +71,10 @@ class PreferenceEnumTest extends TestCase
         $this->assertEquals(1, $this->testUser->getPreferences(VideoPreferences::class)->count());
         $this->assertEquals(2, Preference::where('group', General::class)->count());
 
-        $this->assertEquals('de', $this->testUser->getPreference(General::LANGUAGE,  'default'));
+        $this->assertEquals('de', $this->testUser->getPreference(General::LANGUAGE, 'default'));
 
         $this->testUser->removePreference(General::LANGUAGE);
         $this->assertEquals('default', $this->testUser->getPreference(General::LANGUAGE, 'default'));
-
 
         PreferenceBuilder::deleteBulk($deletePreferences);
         $this->assertEquals(1, Preference::all()->count());

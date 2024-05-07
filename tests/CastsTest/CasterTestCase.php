@@ -9,7 +9,6 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\General;
 
 class CasterTestCase extends TestCase
 {
-
     protected Preference $dummyPref;
 
     public function setUp(): void
@@ -18,6 +17,4 @@ class CasterTestCase extends TestCase
 
         $this->dummyPref = PreferenceBuilder::init(General::LANGUAGE)->create();
     }
-
-
 }

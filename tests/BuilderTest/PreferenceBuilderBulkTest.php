@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference\Tests\BuilderTest;
 
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Enums\Cast;
 use Matteoc99\LaravelPreference\Factory\PreferenceBuilder;
 use Matteoc99\LaravelPreference\Models\Preference;
@@ -14,12 +15,10 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
 class PreferenceBuilderBulkTest extends TestCase
 {
-
-
     /** @test */
     public function init_bulk_throws_exception_with_empty_preferences_array()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         PreferenceBuilder::initBulk([]);
     }
@@ -32,10 +31,9 @@ class PreferenceBuilderBulkTest extends TestCase
             ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::INT],
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
-
 
     /** @test */
     public function init_bulk_correctly_creates_multiple_preferences()
@@ -63,7 +61,7 @@ class PreferenceBuilderBulkTest extends TestCase
 
         $deletePreferences = [
             ['name' => OtherPreferences::CONFIG],
-            ['name' => OtherPreferences::QUALITY]
+            ['name' => OtherPreferences::QUALITY],
         ];
 
         PreferenceBuilder::deleteBulk($deletePreferences);
@@ -76,10 +74,10 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_throws_exception_with_invalid_cast()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => 'invalid_cast']
+            ['name' => General::LANGUAGE, 'cast' => 'invalid_cast'],
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
 
@@ -87,7 +85,7 @@ class PreferenceBuilderBulkTest extends TestCase
     public function init_bulk_throws_exception_if_rule_validation_fails()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 10, 'rule' => new LowerThanRule(5)]
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 10, 'rule' => new LowerThanRule(5)],
         ];
 
         $this->expectException(ValidationException::class);
@@ -109,45 +107,41 @@ class PreferenceBuilderBulkTest extends TestCase
         $this->assertDatabaseCount((new Preference())->getTable(), 2);
         $this->assertDatabaseHas((new Preference())->getTable(), ['name' => General::LANGUAGE]);
 
-        $found = Preference::query()->where('name', "=", General::LANGUAGE);
+        $found = Preference::query()->where('name', '=', General::LANGUAGE);
         $this->assertEquals(1, $found->count());
         $this->assertEquals(Cast::INT, $found->first()->cast);
     }
 
-
     /** @test */
-
     public function init_bulk_handles_mixed_valid_and_invalid_preferences()
     {
         $preferences = [
             ['name' => General::LANGUAGE, 'cast' => Cast::STRING],
             ['cast' => Cast::INT], // Missing 'name'
-            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 10, 'rule' => new LowerThanRule(5)] // Fails rule
+            ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::BOOL, 'default_value' => 10, 'rule' => new LowerThanRule(5)], // Fails rule
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
 
     /** @test */
-
     public function init_bulk_handles_deprecated_group()
     {
         $preferences = [
-            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'group' => "hi"],
+            ['name' => General::LANGUAGE, 'cast' => Cast::STRING, 'group' => 'hi'],
         ];
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         PreferenceBuilder::initBulk($preferences);
     }
 
     /** @test */
-
     public function init_bulk_with_all_options()
     {
         $preferences = [
             ['name' => VideoPreferences::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
-            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume']
+            ['name' => General::LANGUAGE, 'cast' => Cast::INT, 'default_value' => 2, 'rule' => new LowerThanRule(5), 'description' => 'volume'],
         ];
 
         PreferenceBuilder::initBulk($preferences);
@@ -158,5 +152,4 @@ class PreferenceBuilderBulkTest extends TestCase
         $this->assertDatabaseCount((new Preference())->getTable(), 0);
 
     }
-
 }

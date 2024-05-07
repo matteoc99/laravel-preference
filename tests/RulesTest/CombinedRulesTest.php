@@ -25,9 +25,9 @@ class CombinedRulesTest extends TestCase
             [new OrRule(new InstanceOfRule(Theme::class), new IsRule(Type::ITERABLE)), Theme::LIGHT, true, 'Expected OrRule to pass with an instance of SomeClass.'],
             [new OrRule(new InstanceOfRule(Theme::class), new IsRule(Type::ITERABLE)), [], true, 'Expected OrRule to pass with an iterable (array).'],
             [new OrRule(new LowerThanRule(5), new BetweenRule(10, 20)), 25, false, 'Expected OrRule to fail when all rules fail.'],
-            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule("it", "en", "de")), 10, true, 'Expected OrRule to pass with nested AndRule conditions met.'],
-            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule("it", "en", "de")), "en", true, 'Expected OrRule to pass with value in InRule parameters.'],
-            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule("it", "en", "de")), "fr", false, 'Expected OrRule to fail when nested conditions are not met.'],
+            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule('it', 'en', 'de')), 10, true, 'Expected OrRule to pass with nested AndRule conditions met.'],
+            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule('it', 'en', 'de')), 'en', true, 'Expected OrRule to pass with value in InRule parameters.'],
+            [new OrRule(new AndRule(new BetweenRule(5, 15), new LowerThanRule(20)), new InRule('it', 'en', 'de')), 'fr', false, 'Expected OrRule to fail when nested conditions are not met.'],
         ];
     }
 
@@ -39,7 +39,7 @@ class CombinedRulesTest extends TestCase
             [new AndRule(new BetweenRule(2.4, 5.5), new LowerThanRule(3)), 6, false, 'Expected AndRule to fail when both conditions fail.'],
             [new AndRule(new InstanceOfRule(Theme::class), new IsRule(Type::ITERABLE)), Theme::LIGHT, false, 'Expected AndRule to fail since SomeClass is not iterable.'],
             [new AndRule(new InstanceOfRule(Theme::class), new IsRule(Type::ITERABLE)), [], false, 'Expected AndRule to fail since array is not an instance of SomeClass.'],
-            [new AndRule(new OrRule(new BetweenRule(10, 20), new InRule("it", "en", "de")), new LowerThanRule(15)), 12, true, 'Expected AndRule to pass with nested OrRule condition met and value less than 15.'],
+            [new AndRule(new OrRule(new BetweenRule(10, 20), new InRule('it', 'en', 'de')), new LowerThanRule(15)), 12, true, 'Expected AndRule to pass with nested OrRule condition met and value less than 15.'],
             [new AndRule(new BetweenRule(2.4, 5.5), new LowerThanRule(5.5)), 5.4, true, 'Expected AndRule to pass at the edge of the range.'],
         ];
     }
@@ -62,7 +62,7 @@ class CombinedRulesTest extends TestCase
      */
     public function test_or_rule_validation($rule, $value, $expected, $message)
     {
-        $failed      = false;
+        $failed = false;
         $failClosure = function ($message) use (&$failed) {
             $failed = true;
         };
@@ -74,6 +74,4 @@ class CombinedRulesTest extends TestCase
             $this->assertTrue($failed, $message);
         }
     }
-
-
 }

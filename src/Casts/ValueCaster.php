@@ -8,12 +8,15 @@ use Matteoc99\LaravelPreference\Contracts\CastableEnum;
 
 class ValueCaster implements CastsAttributes
 {
-
-    public function __construct(protected ?CastableEnum $caster = null) { }
+    public function __construct(protected ?CastableEnum $caster = null)
+    {
+    }
 
     public function get(?Model $model, string $key, mixed $value, array $attributes)
     {
-        if (is_null($value)) return null;
+        if (is_null($value)) {
+            return null;
+        }
 
         $caster = $this->getCaster($model, $attributes);
 
@@ -27,7 +30,9 @@ class ValueCaster implements CastsAttributes
 
     public function set(?Model $model, string $key, mixed $value, array $attributes)
     {
-        if (is_null($value)) return null;
+        if (is_null($value)) {
+            return null;
+        }
 
         $caster = $this->getCaster($model, $attributes);
 
@@ -38,16 +43,16 @@ class ValueCaster implements CastsAttributes
         return $value;
     }
 
-    private function getCaster(?Model $model, array $attributes): CastableEnum|null
+    private function getCaster(?Model $model, array $attributes): ?CastableEnum
     {
         if (array_key_exists('cast', $attributes)) {
             $caster = unserialize($attributes['cast']);
-        } else if (is_null($model)) {
+        } elseif (is_null($model)) {
             $caster = $this->caster;
         } else {
             $caster = $model->cast ?? null;
             if (is_null($caster) && $model->isRelation('preference')) {
-                if (!$model->relationLoaded('preference')) {
+                if (! $model->relationLoaded('preference')) {
                     $model->load('preference');
                 }
                 $caster = $model->preference->cast ?? null;

@@ -17,14 +17,12 @@ use Matteoc99\LaravelPreference\Utils\ConfigHelper;
 
 class WorkflowTest extends ApiTestCase
 {
-
-
     /** @test */
     public function test_workflow()
     {
 
         $general = $this->get(route('preferences.user.general.get', ['scope_id' => 1, 'preference' => 'language']));
-        $video   = $this->get(route('preferences.user.video.get', ['scope_id' => 1, 'preference' => 'language']));
+        $video = $this->get(route('preferences.user.video.get', ['scope_id' => 1, 'preference' => 'language']));
 
         $general->assertSuccessful();
         $video->assertNotFound();
@@ -45,7 +43,7 @@ class WorkflowTest extends ApiTestCase
         $video->assertJson(['value' => 2]);
 
         $video = $this->patch(route('preferences.user.video.update', ['scope_id' => 1, 'preference' => 'quality']), [
-            'value' => 4
+            'value' => 4,
         ]);
         $video->assertJson(['value' => 4]);
 
@@ -54,14 +52,13 @@ class WorkflowTest extends ApiTestCase
         $video->assertJson(['value' => 2]);
 
         $video = $this->patch(route('preferences.user.video.update', ['scope_id' => 1, 'preference' => 'quality']), [
-            'value' => 40
+            'value' => 40,
         ]);
 
         $video->assertRedirect();
     }
 
     /** @test */
-
     public function test_xss_workflow()
     {
         PreferenceBuilder::init(General::EMAILS)->create();
@@ -69,7 +66,7 @@ class WorkflowTest extends ApiTestCase
         $xssInput = '<span/onmouseover=confirm(1)>X</span>';
 
         $response = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'emails']), [
-            'value' => $xssInput
+            'value' => $xssInput,
         ]);
 
         $response->assertSuccessful();
@@ -95,7 +92,6 @@ class WorkflowTest extends ApiTestCase
         $theme->assertSuccessful();
         $theme->assertJson(['value' => 'light']);
     }
-
 
     /** @test */
     public function test_float_workflow()
@@ -123,7 +119,6 @@ class WorkflowTest extends ApiTestCase
         $notification->assertJson(['value' => false]);
     }
 
-
     /** @test */
     public function test_array_workflow()
     {
@@ -134,7 +129,6 @@ class WorkflowTest extends ApiTestCase
         $genres = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'config']), ['value' => ['comedy', 'drama']]);
         $genres->assertJson(['value' => ['comedy', 'drama']]);
     }
-
 
     /** @test */
     public function test_date_workflow()
@@ -176,7 +170,7 @@ class WorkflowTest extends ApiTestCase
             ->withDefaultValue(time())
             ->create();
         sleep(1);
-        $time      = time();
+        $time = time();
         $lastLogin = $this->patch(route('preferences.user.general.update', ['scope_id' => 1, 'preference' => 'reminder']), ['value' => $time]);
         $lastLogin->assertJson(['value' => $time]);
     }
@@ -209,7 +203,6 @@ class WorkflowTest extends ApiTestCase
         self::assertEquals(OtherPreferences::CONFIG, $this->testUser->getPreference(General::CONFIG));
 
     }
-
 
     /** @test */
     public function test_object_workflow()

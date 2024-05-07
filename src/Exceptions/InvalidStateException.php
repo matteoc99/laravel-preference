@@ -7,7 +7,6 @@ use Throwable;
 
 class InvalidStateException extends Exception
 {
-
     private int $state;
 
     public function __construct($state, string $message, ?Throwable $previous = null)
@@ -16,9 +15,6 @@ class InvalidStateException extends Exception
         parent::__construct($message, 0, $previous);
     }
 
-    /**
-     * @return int
-     */
     public function getState(): int
     {
         return $this->state;

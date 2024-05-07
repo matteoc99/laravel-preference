@@ -709,7 +709,7 @@ then run: `composer pipeline`
 
 ## Contributing
 
-See [Contributing](CONTRIBUTING.md) for details.
+See [Contributing](.github/CONTRIBUTING.md) for details.
 
 ## Security Vulnerabilities
 

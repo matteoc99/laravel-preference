@@ -16,12 +16,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2
+          php-version: 8.3
           extensions: curl, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, iconv, xdebug
           coverage: xdebug
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:^10.0" "orchestra/testbench:8.*"
+          composer require "laravel/framework:^11.0" "orchestra/testbench:9.*"
           composer update
       - name: Execute tests
         run: php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml'

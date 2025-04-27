@@ -24,7 +24,8 @@
     "test": "vendor/bin/phpunit",
     "pint-test": "vendor/bin/pint --config pint.json --test",
     "pint": "vendor/bin/pint --config pint.json",
-    "pipeline": "gh act -W '.github/workflows/tests.yml'",
+    "pipeline-tests": "gh act -W '.github/workflows/tests.yml'",
+    "pipeline-coverage": "gh act -W '.github/workflows/coverage.yml'",
     "coverage": "php -d xdebug.mode=coverage vendor/bin/phpunit ./tests --coverage-clover='reports/coverage/coverage.xml' --coverage-html='reports/coverage'"
   },
   "minimum-stability": "dev",
@@ -39,8 +40,8 @@
     "graham-campbell/security-core": "Required to use xss cleaning.(^4.0)"
   },
   "require-dev": {
-    "orchestra/testbench": "^9.0",
-    "phpunit/phpunit": "^10.0",
+    "orchestra/testbench": "^9.0 || ^10",
+    "phpunit/phpunit": "^10 || ^11",
     "laravel/pint": "^1.15"
   },
   "extra": {

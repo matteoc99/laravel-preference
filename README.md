@@ -58,7 +58,6 @@ This Laravel package aims to store and manage user settings/preferences in a sim
 - Blade Directives
 
 
-
 - Additional suggestions are welcome. (check out  [Contributing](#contributing))
 
 ## Installation
@@ -728,7 +727,8 @@ The MIT License (MIT). Please check the [License File](LICENSE) for more informa
 
 ## Support target
 
-| Package Version | Laravel Version | Maintained |
-|-----------------|-----------------|------------|
-| 1.x             | 10              | ❌          |
-| 2.x             | 10 & 11         | ✅          |
+| Package Version | Laravel Version | PHP   | Maintained |
+|-----------------|-----------------|-------|------------|
+| 1.x             | 10              | >=8.1 | ❌          |
+| 2.0 & 2.1       | 10 & 11         | >=8.1 | ❌          |
+| ^2.2            | 10 & 11 & 12    | >=8.2 | ✅          |

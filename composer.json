@@ -40,8 +40,8 @@
     "graham-campbell/security-core": "Required to use xss cleaning.(^4.0)"
   },
   "require-dev": {
-    "orchestra/testbench": "^9.0",
-    "phpunit/phpunit": "^10.0",
+    "orchestra/testbench": "^9.0 || ^10",
+    "phpunit/phpunit": "^10 || ^11",
     "laravel/pint": "^1.15"
   },
   "extra": {

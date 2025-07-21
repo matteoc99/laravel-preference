@@ -17,8 +17,6 @@ abstract class BaseBuilder
 {
     use HasState;
 
-    protected Preference $preference;
-
     public const STATE_INITIALIZED = 1;
 
     public const STATE_CREATED = 2;
@@ -41,10 +39,12 @@ abstract class BaseBuilder
 
     public const STATE_ALLOWED_VALUES_SET = 1024;
 
+    protected Preference $preference;
+
     /** @throws InvalidStateException */
     public function __construct(PreferenceGroup $name, CastableEnum $cast)
     {
-        $this->preference = new Preference();
+        $this->preference = new Preference;
 
         $this->addState(self::STATE_INITIALIZED);
 
@@ -129,24 +129,6 @@ abstract class BaseBuilder
 
     }
 
-    /** @throws InvalidStateException */
-    public function delete(): int
-    {
-
-        if (! $this->isStateSet(self::STATE_INITIALIZED)
-            || ! $this->isStateSet(self::STATE_NAME_SET)) {
-            throw new InvalidStateException($this->getState(), 'Initialize the builder before deleting the preference');
-        }
-
-        $this->addState(self::STATE_DELETED);
-
-        return Preference::query()
-            ->where('group', $this->preference->group)
-            ->where('name', $this->preference->name)
-            ->delete();
-
-    }
-
     /**
      * @throws InvalidStateException
      * @throws ValidationException
@@ -163,5 +145,23 @@ abstract class BaseBuilder
         );
 
         return $this->preference->fresh();
+    }
+
+    /** @throws InvalidStateException */
+    public function delete(): int
+    {
+
+        if (! $this->isStateSet(self::STATE_INITIALIZED)
+            || ! $this->isStateSet(self::STATE_NAME_SET)) {
+            throw new InvalidStateException($this->getState(), 'Initialize the builder before deleting the preference');
+        }
+
+        $this->addState(self::STATE_DELETED);
+
+        return Preference::query()
+            ->where('group', $this->preference->group)
+            ->where('name', $this->preference->name)
+            ->delete();
+
     }
 }

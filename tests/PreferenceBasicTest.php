@@ -13,17 +13,17 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Enums\VideoPreferences;
 
 class PreferenceBasicTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         PreferenceBuilder::init(General::LANGUAGE)
             ->withDefaultValue('en')
             ->withRule(new InRule('en', 'it', 'de'))
-            ->create();
+            ->updateOrCreate();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         PreferenceBuilder::delete(General::LANGUAGE);
 
@@ -100,7 +100,7 @@ class PreferenceBasicTest extends TestCase
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
         PreferenceBuilder::init(VideoPreferences::QUALITY)->updateOrCreate();
 
-        $this->assertDatabaseCount((new Preference())->getTable(), 3);
+        $this->assertDatabaseCount((new Preference)->getTable(), 3);
 
         $this->testUser->setPreference(VideoPreferences::QUALITY, '144p');
 
@@ -123,7 +123,7 @@ class PreferenceBasicTest extends TestCase
         PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
         PreferenceBuilder::init(NumericPreferences::TWO)->updateOrCreate();
 
-        $this->assertDatabaseCount((new Preference())->getTable(), 3);
+        $this->assertDatabaseCount((new Preference)->getTable(), 3);
 
         $this->testUser->setPreference(NumericPreferences::TWO, '14');
         $this->testUser->setPreference(NumericPreferences::ONE, ['test' => 'value']);

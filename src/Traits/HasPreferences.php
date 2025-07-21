@@ -12,6 +12,9 @@ use InvalidArgumentException;
 use Matteoc99\LaravelPreference\Contracts\PreferenceGroup;
 use Matteoc99\LaravelPreference\Contracts\PreferencePolicy;
 use Matteoc99\LaravelPreference\Enums\PolicyAction;
+use Matteoc99\LaravelPreference\Events\AllPreferencesDeletedEvent;
+use Matteoc99\LaravelPreference\Events\PreferenceDeletedEvent;
+use Matteoc99\LaravelPreference\Events\PreferenceUpdatedEvent;
 use Matteoc99\LaravelPreference\Exceptions\PreferenceNotFoundException;
 use Matteoc99\LaravelPreference\Models\Preference;
 use Matteoc99\LaravelPreference\Models\UserPreference;
@@ -21,34 +24,6 @@ use UnitEnum;
 
 trait HasPreferences
 {
-    /** Defines a polymorphic relationship to user preferences. */
-    private function userPreferences(): MorphMany
-    {
-        return $this->morphMany(UserPreference::class, 'preferenceable');
-    }
-
-    /**
-     * Get a user's preference value or default if not set.
-     *
-     * @param  mixed|null  $default  Default value if preference not set.
-     *
-     * @throws AuthorizationException
-     * @throws PreferenceNotFoundException
-     */
-    public function getPreference(PreferenceGroup|Preference $preference, mixed $default = null): mixed
-    {
-
-        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::GET);
-
-        $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
-
-        if (! empty($userPreference) && $preference->nullable) {
-            return $userPreference->value;
-        }
-
-        return $userPreference?->value ?? $preference->default_value ?? $default;
-    }
-
     /**
      * Get a user's preference value or default if not set with no casting
      *
@@ -64,86 +39,6 @@ trait HasPreferences
         $value = $this->getPreference($preference, $default);
 
         return $preference->cast ? $preference->cast->castToDto($value) : ['value' => json_encode($value)];
-    }
-
-    /**
-     * Set or update a user's preference value.
-     *
-     * @param  mixed  $value  Value to set for the preference.
-     *
-     * @throws AuthorizationException
-     * @throws PreferenceNotFoundException
-     * @throws ValidationException
-     */
-    public function setPreference(PreferenceGroup|Preference $preference, mixed $value): void
-    {
-
-        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::UPDATE);
-
-        $value = $this->restoreOriginalValue($preference, $value);
-
-        ValidationHelper::validateValue(
-            $value,
-            $preference->cast,
-            $preference->rule,
-            $preference->nullable,
-            $preference->allowed_values
-        );
-
-        $this->userPreferences()->updateOrCreate(['preference_id' => $preference->id], ['value' => $value]);
-    }
-
-    /**
-     * Remove a user's preference.
-     *
-     *
-     * @return int Number of deleted records.
-     *
-     * @throws AuthorizationException
-     * @throws PreferenceNotFoundException
-     */
-    public function removePreference(PreferenceGroup|Preference $preference): int
-    {
-
-        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::DELETE);
-
-        return $this->userPreferences()->where('preference_id', $preference->id)->delete();
-    }
-
-    /**
-     * Reset the model to its original state
-     * Remove all user's preferences.
-     *
-     *
-     * @return int Number of deleted records.
-     *
-     * @throws AuthorizationException
-     */
-    public function removeAllPreferences(): int
-    {
-        $this->authorize(PolicyAction::DELETE_ALL);
-
-        return $this->userPreferences()->delete();
-    }
-
-    /**
-     * Get all preferences for a user, optionally filtered by group.
-     *
-     * @param  string|null  $group  Group to filter preferences by.
-     *
-     * @throws AuthorizationException
-     */
-    public function getPreferences(?string $group = null): Collection
-    {
-        $this->authorize(PolicyAction::INDEX);
-
-        $query = $this->userPreferences()->with('preference');
-
-        if ($group) {
-            $query->whereHas('preference', fn ($query) => $query->where('group', $group));
-        }
-
-        return $query->get();
     }
 
     /**
@@ -203,6 +98,75 @@ trait HasPreferences
         }
     }
 
+    /**
+     * Get a user's preference value or default if not set.
+     *
+     * @param  mixed|null  $default  Default value if preference not set.
+     *
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     */
+    public function getPreference(PreferenceGroup|Preference $preference, mixed $default = null): mixed
+    {
+
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::GET);
+
+        $userPreference = $this->userPreferences()->where('preference_id', $preference->id)->first();
+
+        if (! empty($userPreference) && $preference->nullable) {
+            return $userPreference->value;
+        }
+
+        return $userPreference?->value ?? $preference->default_value ?? $default;
+    }
+
+    /** Defines a polymorphic relationship to user preferences. */
+    private function userPreferences(): MorphMany
+    {
+        return $this->morphMany(UserPreference::class, 'preferenceable');
+    }
+
+    /**
+     * Set or update a user's preference value.
+     *
+     * @param  mixed  $value  Value to set for the preference.
+     *
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     * @throws ValidationException
+     */
+    public function setPreference(PreferenceGroup|Preference $preference, mixed $value): void
+    {
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::UPDATE);
+
+        // Get the old value before updating
+        $oldValue = $this->getPreference($preference);
+
+        $value = $this->restoreOriginalValue($preference, $value);
+
+        ValidationHelper::validateValue(
+            $value,
+            $preference->cast,
+            $preference->rule,
+            $preference->nullable,
+            $preference->allowed_values
+        );
+
+        $this->userPreferences()->updateOrCreate(['preference_id' => $preference->id], ['value' => $value]);
+
+        // Get the enum representation of the preference
+        $preferenceEnum = SerializeHelper::reversePreferenceToEnum($preference);
+
+        // Dispatch the event
+        event(new PreferenceUpdatedEvent(
+            $this,
+            Auth::user(),
+            $preferenceEnum,
+            $oldValue,
+            $value
+        ));
+    }
+
     private function restoreOriginalValue(Preference $preference, mixed $value): mixed
     {
         if (! empty($preference->allowed_values)) {
@@ -233,5 +197,81 @@ trait HasPreferences
         }
 
         return $value;
+    }
+
+    /**
+     * Remove a user's preference.
+     *
+     *
+     * @return int Number of deleted records.
+     *
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     */
+    public function removePreference(PreferenceGroup|Preference $preference): int
+    {
+        $preference = $this->validateAndRetrievePreference($preference, PolicyAction::DELETE);
+
+        // Get the old value before deletion
+        $oldValue = $this->getPreference($preference);
+
+        // Get the enum representation of the preference
+        $preferenceEnum = SerializeHelper::reversePreferenceToEnum($preference);
+
+        $result = $this->userPreferences()->where('preference_id', $preference->id)->delete();
+
+        // Dispatch the event
+        event(new PreferenceDeletedEvent(
+            $this,
+            Auth::user(),
+            $preferenceEnum,
+            $oldValue
+        ));
+
+        return $result;
+    }
+
+    /**
+     * Reset the model to its original state
+     * Remove all user's preferences.
+     *
+     *
+     * @return int Number of deleted records.
+     *
+     * @throws AuthorizationException
+     */
+    public function removeAllPreferences(): int
+    {
+        $this->authorize(PolicyAction::DELETE_ALL);
+
+        $result = $this->userPreferences()->delete();
+
+        // Dispatch the event
+        event(new AllPreferencesDeletedEvent(
+            $this,
+            Auth::user()
+        ));
+
+        return $result;
+    }
+
+    /**
+     * Get all preferences for a user, optionally filtered by group.
+     *
+     * @param  string|null  $group  Group to filter preferences by.
+     *
+     * @throws AuthorizationException
+     */
+    public function getPreferences(?string $group = null): Collection
+    {
+        $this->authorize(PolicyAction::INDEX);
+
+        $query = $this->userPreferences()->with('preference');
+
+        if ($group) {
+            $query->whereHas('preference', fn ($query) => $query->where('group', $group));
+        }
+
+        return $query->get();
     }
 }

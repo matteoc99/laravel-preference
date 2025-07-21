@@ -7,14 +7,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class InstanceOfRule implements ValidationRule
 {
-    public function __construct(protected string $instance)
-    {
-    }
-
-    public function message(): string
-    {
-        return sprintf('%s must be implemented', $this->instance);
-    }
+    public function __construct(protected string $instance) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -38,5 +31,10 @@ class InstanceOfRule implements ValidationRule
         if (! in_array($this->instance, class_implements($className))) {
             $fail($this->message());
         }
+    }
+
+    public function message(): string
+    {
+        return sprintf('%s must be implemented', $this->instance);
     }
 }

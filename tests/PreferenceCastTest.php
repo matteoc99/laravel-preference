@@ -13,7 +13,7 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\CustomCast;
 
 class PreferenceCastTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -33,7 +33,7 @@ class PreferenceCastTest extends TestCase
 
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         PreferenceBuilder::delete(General::VOLUME);
         PreferenceBuilder::delete(General::EMAILS);

@@ -10,19 +10,10 @@ use RuntimeException;
 
 class SerializeHelper
 {
-    public static function enumToString(PreferenceGroup|string $value): string
-    {
-        if (! $value instanceof PreferenceGroup) {
-            return $value;
-        }
-
-        return $value->value;
-    }
-
     /** splits a preference enum into name and group as string */
     public static function conformNameAndGroup(PreferenceGroup|string &$name, ?string &$group): void
     {
-        //auto set group scope for enums
+        // auto set group scope for enums
         if (empty($group)) {
             if ($name instanceof PreferenceGroup) {
                 $group = $name::class;
@@ -32,6 +23,15 @@ class SerializeHelper
         }
 
         $name = SerializeHelper::enumToString($name);
+    }
+
+    public static function enumToString(PreferenceGroup|string $value): string
+    {
+        if (! $value instanceof PreferenceGroup) {
+            return $value;
+        }
+
+        return $value->value;
     }
 
     /** inverse of the above, reconstructs the original enum */

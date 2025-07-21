@@ -24,13 +24,9 @@ trait HasState
         return ($this->state & $state) === $state;
     }
 
-    /** @throws InvalidStateException */
-    protected function removeState($state): void
+    public function getState(): int
     {
-        if (! $this->isStateSet($state)) {
-            throw new InvalidStateException($this->getState(), 'The model is not in the state: '.$this->getStateName($state).' and can not be removed. ');
-        }
-        $this->state &= ~$state;
+        return $this->state;
     }
 
     protected function getStateName($state): string
@@ -47,8 +43,12 @@ trait HasState
         return 'Unknown State';
     }
 
-    public function getState(): int
+    /** @throws InvalidStateException */
+    protected function removeState($state): void
     {
-        return $this->state;
+        if (! $this->isStateSet($state)) {
+            throw new InvalidStateException($this->getState(), 'The model is not in the state: '.$this->getStateName($state).' and can not be removed. ');
+        }
+        $this->state &= ~$state;
     }
 }

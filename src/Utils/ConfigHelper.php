@@ -64,14 +64,14 @@ class ConfigHelper
         return array_keys(Config::get('user_preference.routes.scopes'));
     }
 
-    public static function getAllMiddlewares(): array
-    {
-        return Config::get('user_preference.routes.middlewares', []);
-    }
-
     public static function getGlobalMiddlewares(): array
     {
         return array_values(array_filter(self::getAllMiddlewares(), 'is_int', ARRAY_FILTER_USE_KEY));
+    }
+
+    public static function getAllMiddlewares(): array
+    {
+        return Config::get('user_preference.routes.middlewares', []);
     }
 
     public static function getScopedMiddlewares($scopeName): array

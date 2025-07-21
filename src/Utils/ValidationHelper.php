@@ -16,16 +16,6 @@ use Matteoc99\LaravelPreference\Rules\OrRule;
 class ValidationHelper
 {
     /** @throws ValidationException */
-    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): void
-    {
-        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable, $allowed_classes)]);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-    }
-
-    /** @throws ValidationException */
     public static function validatePreference(Preference $preference): void
     {
         if (isset($preference->default_value)) {
@@ -36,6 +26,55 @@ class ValidationHelper
                 $preference->nullable,
                 $preference->allowed_values
             );
+        }
+    }
+
+    /** @throws ValidationException */
+    public static function validateValue(mixed $value, ?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): void
+    {
+        $validator = Validator::make(['value' => $value], ['value' => self::getValidationRules($cast, $rule, $nullable, $allowed_classes)]);
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+    }
+
+    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): array
+    {
+        $rules = [];
+        if ($nullable) {
+            $rules[] = 'nullable';
+        }
+        if (! empty($allowed_classes)) {
+            $instance_rules = [];
+            foreach ($allowed_classes as $class) {
+                $instance_rules[] = new InstanceOfRule($class);
+            }
+
+            $rules[] = new OrRule(...$instance_rules);
+        }
+
+        if ($cast) {
+            $castValidation = $cast->validation();
+            if ($castValidation) {
+                $rules = array_merge($rules, self::processRule($castValidation));
+            }
+        }
+        if ($rule) {
+            $rules = array_merge($rules, self::processRule($rule));
+        }
+
+        return $rules;
+    }
+
+    private static function processRule($rule): array
+    {
+        if (is_array($rule)) {
+            return $rule;
+        } elseif ($rule instanceof ValidationRule) {
+            return [$rule];
+        } else {
+            return explode('|', $rule);
         }
     }
 
@@ -81,45 +120,6 @@ class ValidationHelper
             throw new InvalidArgumentException(
                 sprintf('index: #%s group has been deprecated', $index)
             );
-        }
-    }
-
-    private static function getValidationRules(?CastableEnum $cast, ?ValidationRule $rule, bool $nullable = false, ?array $allowed_classes = []): array
-    {
-        $rules = [];
-        if ($nullable) {
-            $rules[] = 'nullable';
-        }
-        if (! empty($allowed_classes)) {
-            $instance_rules = [];
-            foreach ($allowed_classes as $class) {
-                $instance_rules[] = new InstanceOfRule($class);
-            }
-
-            $rules[] = new OrRule(...$instance_rules);
-        }
-
-        if ($cast) {
-            $castValidation = $cast->validation();
-            if ($castValidation) {
-                $rules = array_merge($rules, self::processRule($castValidation));
-            }
-        }
-        if ($rule) {
-            $rules = array_merge($rules, self::processRule($rule));
-        }
-
-        return $rules;
-    }
-
-    private static function processRule($rule): array
-    {
-        if (is_array($rule)) {
-            return $rule;
-        } elseif ($rule instanceof ValidationRule) {
-            return [$rule];
-        } else {
-            return explode('|', $rule);
         }
     }
 

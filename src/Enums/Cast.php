@@ -69,19 +69,29 @@ enum Cast: string implements CastableEnum
         };
     }
 
-    public function castFromString(string $value): mixed
+    private function valueToArray(mixed $value): array
     {
-        return match ($this) {
-            self::INT => (int) $value,
-            self::FLOAT => (float) $value,
-            self::STRING => $value,
-            self::BOOL => ! empty($value),
-            self::ARRAY => json_decode($value, true),
-            self::DATE, self::DATETIME => new Carbon($value),
-            self::TIME => Carbon::now()->setTimeFromTimeString($value),
-            self::TIMESTAMP => Carbon::createFromTimestamp($value),
-            self::NONE, self::BACKED_ENUM, self::ENUM, self::OBJECT => unserialize($value),
-        };
+        if (is_object($value) && method_exists($value, 'toArray')) {
+            return [
+                'value' => $value->toArray(),
+            ];
+        }
+        if (is_object($value) && in_array(BackedEnum::class, class_implements($value))) {
+            return [
+                'value' => $value->value,
+            ];
+        } elseif (is_object($value) && in_array(UnitEnum::class, class_implements($value))) {
+            return [
+                'value' => $value->name,
+            ];
+        }
+        if (! is_array($value)) {
+            return ['value' => is_string($value) ? $value : $this->castToString($value)];
+        }
+
+        return [
+            'value' => $value,
+        ];
     }
 
     /** @throws ValidationException */
@@ -115,16 +125,6 @@ enum Cast: string implements CastableEnum
             self::ENUM => $this->ensureEnum($value),
             self::OBJECT => $this->ensureObject($value),
             default => throw ValidationException::withMessages(['Unknown casting type']),
-        };
-    }
-
-    public function isPrimitive(): bool
-    {
-        return match ($this) {
-            self::BACKED_ENUM,
-            self::ENUM,
-            self::OBJECT => false,
-            default => true,
         };
     }
 
@@ -180,28 +180,28 @@ enum Cast: string implements CastableEnum
         return $value;
     }
 
-    private function valueToArray(mixed $value): array
+    public function castFromString(string $value): mixed
     {
-        if (is_object($value) && method_exists($value, 'toArray')) {
-            return [
-                'value' => $value->toArray(),
-            ];
-        }
-        if (is_object($value) && in_array(BackedEnum::class, class_implements($value))) {
-            return [
-                'value' => $value->value,
-            ];
-        } elseif (is_object($value) && in_array(UnitEnum::class, class_implements($value))) {
-            return [
-                'value' => $value->name,
-            ];
-        }
-        if (! is_array($value)) {
-            return ['value' => is_string($value) ? $value : $this->castToString($value)];
-        }
+        return match ($this) {
+            self::INT => (int) $value,
+            self::FLOAT => (float) $value,
+            self::STRING => $value,
+            self::BOOL => ! empty($value),
+            self::ARRAY => json_decode($value, true),
+            self::DATE, self::DATETIME => new Carbon($value),
+            self::TIME => Carbon::now()->setTimeFromTimeString($value),
+            self::TIMESTAMP => Carbon::createFromTimestamp($value),
+            self::NONE, self::BACKED_ENUM, self::ENUM, self::OBJECT => unserialize($value),
+        };
+    }
 
-        return [
-            'value' => $value,
-        ];
+    public function isPrimitive(): bool
+    {
+        return match ($this) {
+            self::BACKED_ENUM,
+            self::ENUM,
+            self::OBJECT => false,
+            default => true,
+        };
     }
 }

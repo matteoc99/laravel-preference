@@ -12,11 +12,11 @@ class PolicyTest extends TestCase
 {
     private MyPolicy $policy;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
-        $this->policy = new MyPolicy();
+        $this->policy = new MyPolicy;
         PreferenceBuilder::init(General::LANGUAGE)->withPolicy($this->policy)->nullable()->create();
     }
 

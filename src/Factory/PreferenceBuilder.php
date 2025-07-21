@@ -42,29 +42,6 @@ class PreferenceBuilder
     }
 
     /**
-     * Convenience method to create a new array preference with optional default value.
-     * Initializes the preference as nullable with a default value of null or as specified, and sets the cast type to
-     * ARRAY. This method uses a fluent interface to configure and create the preference in one call.
-     *
-     * @param  PreferenceGroup  $name  The preference enum, used as the identifier.
-     * @param  array|null  $default  Optional. The default value for the preference. Defaults to null.
-     * @return void Creates the preference and commits it to the database.
-     *
-     * @throws InvalidStateException
-     *
-     * @example
-     * ```
-     * PreferenceBuilder::buildArray(new SettingsPreferenceGroup(), ["item1", "item2"]);
-     * ```
-     * This example creates an array preference for 'SettingsPreferenceGroup' with a default array containing "item1"
-     * and "item2".
-     */
-    public static function buildArray(PreferenceGroup $name, ?array $default = null): void
-    {
-        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue($default)->create();
-    }
-
-    /**
      * Initializes the PreferenceBuilder with a specified name and cast type, setting up a new preference entry.
      * The method sets the initial configuration for the preference using a fluent builder interface, allowing further
      * customization.
@@ -94,12 +71,27 @@ class PreferenceBuilder
         return new $builderClass($name, $cast);
     }
 
-    /** Deletes a preference from the DB based on its name */
-    public static function delete(PreferenceGroup $name): int
+    /**
+     * Convenience method to create a new array preference with optional default value.
+     * Initializes the preference as nullable with a default value of null or as specified, and sets the cast type to
+     * ARRAY. This method uses a fluent interface to configure and create the preference in one call.
+     *
+     * @param  PreferenceGroup  $name  The preference enum, used as the identifier.
+     * @param  array|null  $default  Optional. The default value for the preference. Defaults to null.
+     * @return void Creates the preference and commits it to the database.
+     *
+     * @throws InvalidStateException
+     *
+     * @example
+     * ```
+     * PreferenceBuilder::buildArray(new SettingsPreferenceGroup(), ["item1", "item2"]);
+     * ```
+     * This example creates an array preference for 'SettingsPreferenceGroup' with a default array containing "item1"
+     * and "item2".
+     */
+    public static function buildArray(PreferenceGroup $name, ?array $default = null): void
     {
-        SerializeHelper::conformNameAndGroup($name, $group);
-
-        return Preference::where('group', $group)->where('name', $name)->delete();
+        self::init($name, Cast::ARRAY)->nullable()->withDefaultValue($default)->create();
     }
 
     /**
@@ -247,5 +239,13 @@ class PreferenceBuilder
         }
 
         return $query->delete();
+    }
+
+    /** Deletes a preference from the DB based on its name */
+    public static function delete(PreferenceGroup $name): int
+    {
+        SerializeHelper::conformNameAndGroup($name, $group);
+
+        return Preference::where('group', $group)->where('name', $name)->delete();
     }
 }

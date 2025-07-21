@@ -12,7 +12,7 @@ use Matteoc99\LaravelPreference\Tests\TestSubjects\Models\User;
 
 class ApiTestCase extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

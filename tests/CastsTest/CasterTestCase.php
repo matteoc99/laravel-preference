@@ -11,7 +11,7 @@ class CasterTestCase extends TestCase
 {
     protected Preference $dummyPref;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

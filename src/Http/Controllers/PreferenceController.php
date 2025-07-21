@@ -3,6 +3,7 @@
 namespace Matteoc99\LaravelPreference\Http\Controllers;
 
 use Exception;
+use GrahamCampbell\SecurityCore\Security;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -31,50 +32,6 @@ class PreferenceController extends Controller
     {
         try {
             $this->init($request);
-        } catch (Throwable $exception) {
-            $this->handleException($exception);
-        }
-    }
-
-    public function index(Request $request): JsonResponse
-    {
-        try {
-            return response()->json($this->scope->getPreferences($this->group));
-        } catch (Throwable $exception) {
-            $this->handleException($exception);
-        }
-    }
-
-    public function get(Request $request): JsonResponse
-    {
-        try {
-            return $this->prepareResponse();
-        } catch (Throwable $exception) {
-            $this->handleException($exception);
-        }
-    }
-
-    public function update(PreferenceUpdateRequest $request): JsonResponse
-    {
-
-        try {
-            $value = $request->validated('value');
-            $this->clean($value);
-
-            $this->scope->setPreference($this->group, $value);
-
-            return $this->prepareResponse();
-        } catch (Throwable $exception) {
-            return $this->handleException($exception);
-        }
-    }
-
-    public function delete(Request $request): JsonResponse
-    {
-        try {
-            $this->scope->removePreference($this->group);
-
-            return $this->prepareResponse();
         } catch (Throwable $exception) {
             $this->handleException($exception);
         }
@@ -111,6 +68,18 @@ class PreferenceController extends Controller
         }
     }
 
+    private function extractScopeAndGroup($routeName): array
+    {
+        $prefix = ConfigHelper::getRoutePrefix();
+
+        $routeSegments = explode('.', Str::replaceStart($prefix, '', $routeName));
+
+        return [
+            'scope' => $routeSegments[0],
+            'group' => $routeSegments[1],
+        ];
+    }
+
     /** @throws ConfigException */
     private function validate(string $className, string $interfaceName): void
     {
@@ -124,27 +93,6 @@ class PreferenceController extends Controller
         }
     }
 
-    private function extractScopeAndGroup($routeName): array
-    {
-        $prefix = ConfigHelper::getRoutePrefix();
-
-        $routeSegments = explode('.', Str::replaceStart($prefix, '', $routeName));
-
-        return [
-            'scope' => $routeSegments[0],
-            'group' => $routeSegments[1],
-        ];
-    }
-
-    /**
-     * @throws AuthorizationException
-     * @throws PreferenceNotFoundException
-     */
-    private function prepareResponse(): JsonResponse
-    {
-        return response()->json($this->scope->getPreferenceDto($this->group));
-    }
-
     /** @throws Throwable */
     private function handleException(Throwable|Exception $exception)
     {
@@ -156,20 +104,73 @@ class PreferenceController extends Controller
         };
     }
 
+    public function index(Request $request): JsonResponse
+    {
+        try {
+            return response()->json($this->scope->getPreferences($this->group));
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
+    }
+
+    public function get(Request $request): JsonResponse
+    {
+        try {
+            return $this->prepareResponse();
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
+    }
+
+    /**
+     * @throws AuthorizationException
+     * @throws PreferenceNotFoundException
+     */
+    private function prepareResponse(): JsonResponse
+    {
+        return response()->json($this->scope->getPreferenceDto($this->group));
+    }
+
+    public function update(PreferenceUpdateRequest $request): JsonResponse
+    {
+
+        try {
+            $value = $request->validated('value');
+            $this->clean($value);
+
+            $this->scope->setPreference($this->group, $value);
+
+            return $this->prepareResponse();
+        } catch (Throwable $exception) {
+            return $this->handleException($exception);
+        }
+    }
+
     private function clean(mixed &$value): void
     {
         if (ConfigHelper::isXssCleanEnabled()) {
             if (is_string($value)) {
-                $value = \GrahamCampbell\SecurityCore\Security::create()->clean($value);
+                $value = Security::create()->clean($value);
             } elseif (is_iterable($value)) {
                 foreach ($value as &$item) {
                     if (is_string($item)) {
 
-                        $item = \GrahamCampbell\SecurityCore\Security::create()->clean($item);
+                        $item = Security::create()->clean($item);
                     }
                 }
                 unset($item);
             }
+        }
+    }
+
+    public function delete(Request $request): JsonResponse
+    {
+        try {
+            $this->scope->removePreference($this->group);
+
+            return $this->prepareResponse();
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
         }
     }
 }
